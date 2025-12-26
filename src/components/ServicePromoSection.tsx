@@ -34,43 +34,17 @@ export default function ServicePromoSection() {
       <div className="w-full max-w-[var(--section-max-width)] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[2.5rem] lg:gap-[3.5rem] items-center">
           
-          {/* Left Side - Image Content */}
+          {/* Text Content - Order 1 on Mobile, Order 2 on Desktop */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative flex justify-center items-center"
-          >
-            {/* HATI Mockup Image */}
-            <div className="relative w-full max-w-[500px]">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={mockupImages[currentImageIndex].id}
-                  src={mockupImages[currentImageIndex].src}
-                  alt={mockupImages[currentImageIndex].alt}
-                  className="w-full h-auto drop-shadow-2xl"
-                  style={{ transform: 'scale(1.1)', transformOrigin: 'center' }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                />
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Right Side - Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-3 order-1 lg:order-2"
           >
             {/* Badge */}
             <div 
-              className="inline-flex items-center self-start px-4 py-2 bg-gradient-to-br from-[#000050] to-[#000040] text-white rounded-full text-[0.875rem] md:text-[1rem] tracking-wider"
+              className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
               OUR SERVICES
@@ -90,11 +64,37 @@ export default function ServicePromoSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/business')}
-              className="bg-[#1e1e1e] text-white hover:bg-[#000050] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
+              className="bg-[#000050] text-white hover:bg-[#1e1e1e] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
             >
               서비스 자세히보기
             </motion.button>
+          </motion.div>
+
+          {/* Image Content - Order 2 on Mobile, Order 1 on Desktop */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative flex justify-center items-center order-2 lg:order-1"
+          >
+            {/* HATI Mockup Image */}
+            <div className="relative w-full max-w-[500px]">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={mockupImages[currentImageIndex].id}
+                  src={mockupImages[currentImageIndex].src}
+                  alt={mockupImages[currentImageIndex].alt}
+                  className="w-full h-auto drop-shadow-2xl"
+                  style={{ transform: 'scale(1.1)', transformOrigin: 'center' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                />
+              </AnimatePresence>
+            </div>
           </motion.div>
         </div>
       </div>

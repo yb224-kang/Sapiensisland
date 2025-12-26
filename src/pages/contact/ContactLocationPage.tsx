@@ -5,13 +5,13 @@ import { Navigation, Car, Train, Bus, Phone, Mail, MapPin, Clock } from "lucide-
 
 export default function ContactLocationPage() {
   const tabs = [
-    { id: "inquiry", label: "문의하기", path: "/inquiry" },
+    { id: "inquiry", label: "기타문의", path: "/inquiry" },
     { id: "location", label: "연락처 / 오시는길", path: "/location" }
   ];
 
   return (
     <PageHeroLayout
-      title="문의하기"
+      title="기타문의"
       description="사피엔스아일랜드와 함께 성장할 기회를 만들어보세요.<br class='hidden md:block' />언제든지 문의 주시면 신속하게 답변드리겠습니다."
       backgroundImage="https://www.openaccessgovernment.org/wp-content/uploads/2024/05/iStock-2092734289-e1715601027881.jpg"
       backgroundAlt="Communication and contact"

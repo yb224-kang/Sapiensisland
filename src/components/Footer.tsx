@@ -79,6 +79,14 @@ export default function Footer() {
               >
                 위치정보이용약관
               </Link>
+              <div className="h-[14px] w-0 border-l border-gray-500" />
+              <Link 
+                className="text-[0.8125rem] sm:text-[0.875rem] md:text-[1rem] tracking-[-0.08px] leading-[1.5] hover:underline cursor-pointer text-gray-400 hover:text-white transition-colors"
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                to="/admin"
+              >
+                ADMIN
+              </Link>
             </div>
 
             {/* Divider and Copyright */}

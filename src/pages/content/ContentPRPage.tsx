@@ -132,20 +132,20 @@ export default function ContentPRPage() {
       {/* Article Modal */}
       {selectedArticle && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm p-4"
           onClick={() => setSelectedArticle(null)}
         >
           <div 
-            className="relative w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-6xl h-[90vh] bg-white rounded-xl shadow-xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+            {/* Modal Header - Sticky */}
+            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
               <a
                 href={selectedArticle}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white hover:text-white/80 transition-colors px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full"
+                className="flex items-center gap-2 text-[#000050] hover:text-[#000070] transition-colors px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-xl"
                 style={{ 
                   fontFamily: 'Pretendard Variable, sans-serif', 
                   fontWeight: 600,
@@ -157,9 +157,9 @@ export default function ContentPRPage() {
               </a>
               <button
                 onClick={() => setSelectedArticle(null)}
-                className="text-white hover:text-white/80 transition-colors p-2 bg-white/10 backdrop-blur-sm rounded-full"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
@@ -167,7 +167,7 @@ export default function ContentPRPage() {
             <iframe
               src={selectedArticle}
               title="Article"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 pt-16"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </div>

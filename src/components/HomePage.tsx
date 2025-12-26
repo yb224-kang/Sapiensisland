@@ -5,10 +5,14 @@ import ExpertsGridSection from "./ExpertsGridSection";
 import YouTubeSection from "./YouTubeSection";
 import Footer from "./Footer";
 
-export default function HomePage() {
+interface HomePageProps {
+  onOpenBookingModal?: () => void;
+}
+
+export default function HomePage({ onOpenBookingModal }: HomePageProps) {
   return (
     <>
-      <HeroSection />
+      <HeroSection onOpenBookingModal={onOpenBookingModal} />
       <PartnersSection />
       <ServicePromoSection />
       <ExpertsGridSection />

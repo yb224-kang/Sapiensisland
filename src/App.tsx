@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useState } from "react";
 import Header from "./components/Header";
@@ -18,11 +19,16 @@ import ContentPRPage from "./pages/content/ContentPRPage";
 import ContentYoutubePage from "./pages/content/ContentYoutubePage";
 import ContactInquiryPage from "./pages/contact/ContactInquiryPage";
 import ContactLocationPage from "./pages/contact/ContactLocationPage";
+import AdminPage from "./pages/AdminPage";
+import ExpertSettlementPage from "./pages/ExpertSettlementPage";
 import ScrollToTop from "./components/ScrollToTop";
 import FloatingContactButton from "./components/FloatingContactButton";
 import BookingModal from "./components/BookingModal";
 
-export default function App() {
+function AppContent() {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   const [isBookingModalOpen, setIsBookingModalOpen] =
     useState(false);
   const [preSelectedExpertId, setPreSelectedExpertId] =
@@ -39,16 +45,16 @@ export default function App() {
   };
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <div className="min-h-screen flex flex-col">
-        {/* Header */}
-        <Header />
+        {/* Header - 관리자 페이지에서는 숨김 */}
+        {!isAdminPage && <Header />}
 
         {/* Main Content */}
         <main>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePage onOpenBookingModal={handleOpenBookingModal} />} />
 
             {/* About Routes */}
             <Route
@@ -145,11 +151,27 @@ export default function App() {
               path="/contact/location"
               element={<ContactLocationPage />}
             />
+
+            {/* Admin Route */}
+            <Route
+              path="/admin"
+              element={<AdminPage />}
+            />
+            
+            {/* Expert Settlement Page - 전문가 정산 현황 공유 페이지 */}
+            <Route
+              path="/admin/expert-settlement/:expertId"
+              element={<ExpertSettlementPage />}
+            />
           </Routes>
         </main>
-        <FloatingContactButton
-          onBooking={handleOpenBookingModal}
-        />
+
+        {/* Floating Button - 관리자 페이지에서는 숨김 */}
+        {!isAdminPage && (
+          <FloatingContactButton
+            onBooking={handleOpenBookingModal}
+          />
+        )}
       </div>
 
       {/* Global Booking Modal */}
@@ -158,6 +180,14 @@ export default function App() {
         onClose={handleCloseBookingModal}
         preSelectedExpertId={preSelectedExpertId}
       />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

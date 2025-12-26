@@ -104,10 +104,10 @@ export default function YouTubeSection() {
       <div className="w-full max-w-[var(--section-max-width)] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[2.5rem] lg:gap-[3.5rem] items-center">
           
-          {/* Left Side - Large YouTube Video Carousel */}
+          {/* YouTube Video Carousel - Order 2 on Mobile, Order 1 on Desktop */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="order-2 lg:order-1"
@@ -177,17 +177,17 @@ export default function YouTubeSection() {
             </div>
           </motion.div>
 
-          {/* Right Side - Text Content */}
+          {/* Text Content - Order 1 on Mobile, Order 2 on Desktop */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex flex-col gap-6 order-1 lg:order-2"
+            className="flex flex-col gap-3 order-1 lg:order-2"
           >
             {/* Badge */}
             <div 
-              className="inline-flex items-center self-start px-4 py-2 bg-gradient-to-br from-[#000050] to-[#000040] text-white rounded-full text-[0.875rem] md:text-[1rem] tracking-wider"
+              className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
               CONTENT
@@ -198,8 +198,7 @@ export default function YouTubeSection() {
               className="text-[var(--section-text-primary)] text-[2rem] md:text-[2.625rem] lg:text-[3rem] leading-tight"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 900 }}
             >
-              사피엔스 피플들이 만들어가는<br />
-              CONTENT
+              사피엔스 피플들이 만들어가는 CONTENT
             </h2>
             
             {/* CTA Button */}
@@ -207,7 +206,7 @@ export default function YouTubeSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/content')}
-              className="bg-[#1e1e1e] text-white hover:bg-[#000050] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
+              className="bg-[#000050] text-white hover:bg-[#1e1e1e] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
             >
               자세히보기

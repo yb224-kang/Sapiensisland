@@ -263,10 +263,10 @@ export default function ProfileBookingPage() {
                   </p>
 
                   {/* Calendar */}
-                  <div className="mb-8">
+                  <div className="mb-8 max-w-[400px] mx-auto">
                     <div className="flex items-center justify-between mb-4">
                       <h3
-                        className="text-[var(--section-text-primary)] text-[18px]"
+                        className="text-[var(--section-text-primary)] text-[0.875rem]"
                         style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
                       >
                         {today.getFullYear()}년 {today.getMonth() + 1}월
@@ -282,11 +282,11 @@ export default function ProfileBookingPage() {
                     </div>
 
                     {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-7 gap-1.5">
                       {['일', '월', '화', '수', '목', '금', '토'].map((day) => (
                         <div
                           key={day}
-                          className="text-center py-2 text-[var(--section-text-secondary)] text-[13px]"
+                          className="text-center py-2 text-[var(--section-text-secondary)] text-[0.6875rem]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                         >
                           {day}
@@ -307,7 +307,7 @@ export default function ProfileBookingPage() {
                             whileHover={isAvailable ? { scale: 1.1 } : {}}
                             onClick={() => isAvailable && setSelectedDate(day)}
                             disabled={!isAvailable}
-                            className={`aspect-square rounded-lg flex items-center justify-center text-[14px] transition-all duration-200 ${
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-[0.75rem] transition-all duration-200 ${
                               isSelected
                                 ? 'bg-[var(--section-brand-primary)] text-white shadow-lg'
                                 : isAvailable

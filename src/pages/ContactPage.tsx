@@ -10,20 +10,14 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    agency: "",
-    client: "",
-    location: "",
-    topic: "",
-    audience: "",
     contactName: "",
     contactPhone: "",
     contactEmail: "",
-    fee: "",
     message: ""
   });
 
   const tabs = [
-    { id: "inquiry", label: "문의하기" },
+    { id: "inquiry", label: "기타문의" },
     { id: "contact", label: "연락처" },
     { id: "location", label: "찾아오시는길" }
   ];
@@ -45,7 +39,7 @@ export default function ContactPage() {
   return (
     <div className="w-full">
       {/* Hero Section with Full Background */}
-      <div className="relative w-full min-h-[60vh] md:min-h-[65vh] lg:min-h-[70vh]">
+      <div className="relative w-full min-h-[51vh] md:min-h-[55.25vh] lg:min-h-[59.5vh]">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <ImageWithFallback 
@@ -65,7 +59,7 @@ export default function ContactPage() {
               className="text-white tracking-[-0.1px] leading-[1.2] text-[42px] md:text-[56px] lg:text-[68px] mb-6"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 900 }}
             >
-              문의하기
+              기타문의
             </h1>
             
             <p
@@ -100,189 +94,61 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
-                    htmlFor="agency"
+                    htmlFor="contactName"
                     className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
                     style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                   >
-                    요청사 (AGENCY) *
+                    성함 *
                   </label>
                   <Input
-                    id="agency"
-                    name="agency"
+                    id="contactName"
+                    name="contactName"
                     type="text"
                     required
-                    value={formData.agency}
+                    value={formData.contactName}
                     onChange={handleChange}
                     className="w-full"
-                    placeholder="요청사 이름을 입력해주세요"
+                    placeholder="홍길동"
                   />
                 </div>
 
                 <div>
                   <label
-                    htmlFor="client"
+                    htmlFor="contactPhone"
                     className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
                     style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                   >
-                    주최사 (고객사) *
+                    전화번호 *
                   </label>
                   <Input
-                    id="client"
-                    name="client"
-                    type="text"
+                    id="contactPhone"
+                    name="contactPhone"
+                    type="tel"
                     required
-                    value={formData.client}
+                    value={formData.contactPhone}
                     onChange={handleChange}
                     className="w-full"
-                    placeholder="주최사 이름을 입력해주세요"
+                    placeholder="010-1234-5678"
                   />
                 </div>
 
                 <div>
                   <label
-                    htmlFor="location"
+                    htmlFor="contactEmail"
                     className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
                     style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                   >
-                    강연 장소
+                    이메일 *
                   </label>
                   <Input
-                    id="location"
-                    name="location"
-                    type="text"
-                    value={formData.location}
+                    id="contactEmail"
+                    name="contactEmail"
+                    type="email"
+                    required
+                    value={formData.contactEmail}
                     onChange={handleChange}
                     className="w-full"
-                    placeholder="강연 장소를 입력해주세요"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="topic"
-                    className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                    style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                  >
-                    강연 주제
-                  </label>
-                  <Input
-                    id="topic"
-                    name="topic"
-                    type="text"
-                    value={formData.topic}
-                    onChange={handleChange}
-                    className="w-full"
-                    placeholder="강연 주제를 입력해주세요"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="audience"
-                    className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                    style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                  >
-                    강연 대상
-                  </label>
-                  <Input
-                    id="audience"
-                    name="audience"
-                    type="text"
-                    value={formData.audience}
-                    onChange={handleChange}
-                    className="w-full"
-                    placeholder="강연 대상을 입력해주세요"
-                  />
-                </div>
-
-                {/* 담당자 연락처 섹션 */}
-                <div className="pt-4 border-t border-gray-200">
-                  <h4
-                    className="text-[var(--section-text-primary)] text-[16px] md:text-[18px] mb-4"
-                    style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
-                  >
-                    담당자 연락처
-                  </h4>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="contactName"
-                        className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                      >
-                        성함 *
-                      </label>
-                      <Input
-                        id="contactName"
-                        name="contactName"
-                        type="text"
-                        required
-                        value={formData.contactName}
-                        onChange={handleChange}
-                        className="w-full"
-                        placeholder="홍길동"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="contactPhone"
-                        className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                      >
-                        전화번호 *
-                      </label>
-                      <Input
-                        id="contactPhone"
-                        name="contactPhone"
-                        type="tel"
-                        required
-                        value={formData.contactPhone}
-                        onChange={handleChange}
-                        className="w-full"
-                        placeholder="010-1234-5678"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="contactEmail"
-                        className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                      >
-                        이메일 *
-                      </label>
-                      <Input
-                        id="contactEmail"
-                        name="contactEmail"
-                        type="email"
-                        required
-                        value={formData.contactEmail}
-                        onChange={handleChange}
-                        className="w-full"
-                        placeholder="example@email.com"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="fee"
-                    className="block text-[var(--section-text-primary)] text-[14px] md:text-[16px] mb-2"
-                    style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                  >
-                    강연료
-                  </label>
-                  <Input
-                    id="fee"
-                    name="fee"
-                    type="text"
-                    value={formData.fee}
-                    onChange={handleChange}
-                    className="w-full"
-                    placeholder="강연료를 입력해주세요 (예: 1,000,000원)"
+                    placeholder="example@email.com"
                   />
                 </div>
 

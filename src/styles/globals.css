@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 16px;
+  --font-size: 16px; /* 100% scale */
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
@@ -82,6 +82,27 @@
   --transition-fast: 150ms;
   --transition-normal: 300ms;
   --transition-slow: 500ms;
+
+  /* Typography Rhythm - Golden Ratio Based (1.618) */
+  --spacing-unit: 1.5rem; /* 24px - Base vertical rhythm */
+  --spacing-golden-xs: 0.618rem; /* ~10px */
+  --spacing-golden-sm: 1rem; /* 16px */
+  --spacing-golden-md: 1.618rem; /* ~26px */
+  --spacing-golden-lg: 2.618rem; /* ~42px */
+  --spacing-golden-xl: 4.236rem; /* ~68px */
+  
+  /* Typography Letter Spacing */
+  --letter-spacing-tight: -0.02em; /* Large numbers, headlines */
+  --letter-spacing-snug: -0.01em; /* Titles */
+  --letter-spacing-normal: 0em; /* Body text */
+  --letter-spacing-wide: 0.01em; /* Small text, captions */
+  --letter-spacing-wider: 0.025em; /* Uppercase, labels */
+  
+  /* Typography Line Height */
+  --line-height-tight: 1.2; /* Large numbers */
+  --line-height-snug: 1.3; /* Headlines */
+  --line-height-normal: 1.5; /* Body text */
+  --line-height-relaxed: 1.6; /* Longer paragraphs */
 }
 
 .dark {
@@ -229,6 +250,70 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* Typography Optimization */
+body,
+button,
+input,
+select,
+textarea {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1;
+}
+
+/* Tabular numbers for consistent digit width */
+.tabular-nums,
+[data-tabular-nums],
+.kpi-number,
+.chart-value,
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Typography rhythm utilities */
+.rhythm-tight {
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.rhythm-snug {
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-snug);
+}
+
+.rhythm-normal {
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.rhythm-relaxed {
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* Golden ratio spacing utilities */
+.space-golden-xs {
+  margin-bottom: var(--spacing-golden-xs);
+}
+
+.space-golden-sm {
+  margin-bottom: var(--spacing-golden-sm);
+}
+
+.space-golden-md {
+  margin-bottom: var(--spacing-golden-md);
+}
+
+.space-golden-lg {
+  margin-bottom: var(--spacing-golden-lg);
+}
+
+.space-golden-xl {
+  margin-bottom: var(--spacing-golden-xl);
 }
 
 /* Slick Carousel Minimal Styles */

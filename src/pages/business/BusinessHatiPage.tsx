@@ -25,10 +25,10 @@ export default function BusinessHatiPage() {
       <SectionContainer backgroundColor="light" reducedTopPadding>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--section-gap-large)] lg:gap-[var(--section-gap-xlarge)] items-center w-full max-w-[75rem]">
           {/* Left Side - Text Content */}
-          <div className="flex flex-col gap-[var(--section-gap-small)]">
+          <div className="flex flex-col gap-3">
             {/* Title - Badge Style */}
             <div 
-              className="inline-flex items-center self-start px-4 py-2 bg-[var(--section-brand-primary)] text-white rounded-full text-[14px] md:text-[16px] tracking-wider"
+              className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
               HATI

@@ -242,7 +242,7 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
           >
             <span className="relative z-10 flex items-center justify-center gap-[0.5rem]">
               <Sparkles className="w-[1.25rem] h-[1.25rem] group-hover:rotate-12 transition-transform" />
-              이 전문가 예약하기
+              이 전문가 문의하기
               <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>

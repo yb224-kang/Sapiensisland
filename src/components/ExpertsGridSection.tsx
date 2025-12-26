@@ -13,17 +13,17 @@ export default function ExpertsGridSection() {
       <div className="w-full max-w-[var(--section-max-width)] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[2.5rem] lg:gap-[3.5rem] items-center">
           
-          {/* Left Side - Text Content */}
+          {/* Text Content - Always Order 1 */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-3 order-1"
           >
             {/* Badge */}
             <div 
-              className="inline-flex items-center self-start px-4 py-2 bg-gradient-to-br from-[#000050] to-[#000040] text-white rounded-full text-[0.875rem] md:text-[1rem] tracking-wider"
+              className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
               KNOWLEDGE EXPERTS
@@ -43,20 +43,20 @@ export default function ExpertsGridSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/profile')}
-              className="bg-[#1e1e1e] text-white hover:bg-[#000050] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
+              className="bg-[#000050] text-white hover:bg-[#1e1e1e] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
             >
               자세히보기
             </motion.button>
           </motion.div>
 
-          {/* Right Side - Professor Cards Grid */}
+          {/* Professor Cards Grid - Always Order 2 */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex justify-center lg:justify-start"
+            className="flex justify-center lg:justify-start order-2"
           >
             <div className="relative w-full max-w-[650px]">
               {/* 2 Rows x 4 Columns Grid */}

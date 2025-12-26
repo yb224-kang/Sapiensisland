@@ -37,10 +37,10 @@ export default function FloatingContactButton({ onBooking }: FloatingContactButt
           onClick={() => onBooking(null)}
           className="fixed bottom-8 right-8 z-40 bg-[#000050] text-white px-6 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 flex items-center gap-3 group"
           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-          aria-label="전문가 예약하기"
+          aria-label="강연문의하기"
         >
           <MessageCircle className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-          <span className="text-[0.9375rem]">전문가 예약하기</span>
+          <span className="text-[0.9375rem]">강연문의하기</span>
         </motion.button>
       )}
     </AnimatePresence>

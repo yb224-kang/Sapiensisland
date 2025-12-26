@@ -2,23 +2,45 @@ import PageHeroLayout from "../components/PageHeroLayout";
 import SectionContainer from "../components/SectionContainer";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Button } from "../components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import { professors } from "../data/professors";
 import ExpertDetailModal from "../components/ExpertDetailModal";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface ProfilePageProps {
   onOpenBookingModal: (expertId?: number | null) => void;
 }
 
 export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedExpert, setSelectedExpert] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // URL 파라미터에서 expertId를 읽어서 모달 자동 열기
+  useEffect(() => {
+    const expertIdParam = searchParams.get('expertId');
+    if (expertIdParam) {
+      const expertId = parseInt(expertIdParam, 10);
+      if (!isNaN(expertId) && professors.find(p => p.id === expertId)) {
+        setSelectedExpert(expertId);
+        setIsDetailModalOpen(true);
+      }
+    }
+  }, [searchParams]);
 
   const handleCardClick = (professorId: number) => {
     setSelectedExpert(professorId);
     setIsDetailModalOpen(true);
+    // URL에 expertId 파라미터 추가
+    setSearchParams({ expertId: professorId.toString() });
+  };
+
+  const handleCloseModal = () => {
+    setIsDetailModalOpen(false);
+    // URL에서 expertId 파라미터 제거
+    setSearchParams({});
   };
 
   const handleBookingFromDetail = (expertId: number) => {
@@ -53,14 +75,16 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
             </motion.p>
 
             {/* Professors Grid */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-              {professors.map((professor, index) => (
-                <motion.div
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6 }}
+              className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5"
+            >
+              {professors.map((professor) => (
+                <div
                   key={professor.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="relative bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="p-6 h-full flex flex-col">
@@ -117,7 +141,7 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
                           onOpenBookingModal(professor.id);
                         }}
                       >
-                        예약하기
+                        문의하기
                       </Button>
                       <Button
                         className="w-[4.55rem] bg-white hover:bg-gray-50 text-[var(--section-brand-primary)] border border-[var(--section-brand-primary)] px-3 py-1.5 text-[0.7875rem] rounded-lg transition-all"
@@ -128,9 +152,9 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
                       </Button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </div>
+            </motion.div>
 
             {/* CTA Section */}
             <motion.div
@@ -158,7 +182,7 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
                   className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-8 py-6 text-[1rem] md:text-[1.125rem] rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                   style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                 >
-                  전문가 예약하기 →
+                  강연문의하기 →
                 </Button>
               </div>
             </motion.div>
@@ -170,7 +194,7 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
       <ExpertDetailModal
         expert={selectedExpertData || null}
         isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
+        onClose={handleCloseModal}
         onBooking={handleBookingFromDetail}
       />
 

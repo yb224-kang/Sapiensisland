@@ -25,7 +25,7 @@ export default function AboutPage() {
   return (
     <div className="w-full">
       {/* Hero Section with Full Background */}
-      <div className="relative w-full min-h-[60vh] md:min-h-[65vh] lg:min-h-[70vh]">
+      <div className="relative w-full min-h-[51vh] md:min-h-[55.25vh] lg:min-h-[59.5vh]">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <ImageWithFallback 
