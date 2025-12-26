@@ -760,7 +760,7 @@ export default function DashboardContent() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="총 예약 건수"
           value={totalBookings}
@@ -799,6 +799,20 @@ export default function DashboardContent() {
           subMetrics={[
             { label: '정산완료', value: 28, suffix: '건' },
             { label: '정산예정', value: 17, suffix: '건' }
+          ]}
+        />
+        <KPICard
+          title="이번 달 예약"
+          value={currentMonthData.bookings}
+          change={18.3}
+          icon={<Users className="w-5 h-5" />}
+          iconColor="text-purple-600"
+          suffix="건"
+          subMetrics={[
+            { label: '완료', value: currentMonthData.completed, suffix: '건' },
+            { label: '확정', value: currentMonthData.confirmed, suffix: '건' },
+            { label: '대기중', value: currentMonthData.pending, suffix: '건' },
+            { label: '취소', value: currentMonthData.cancelled, suffix: '건' }
           ]}
         />
       </div>
