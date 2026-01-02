@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Users, FileText, DollarSign, Settings, BarChart3, X, MessageCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Users, FileText, DollarSign, Settings, BarChart3, X, MessageCircle, Clock, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminFormModal from '../components/AdminFormModal';
 import SettlementContent from '../components/SettlementContent';
 import DashboardContent from '../components/DashboardContent';
 import InquiryContent from '../components/InquiryContent';
+import PartnersContent from '../components/PartnersContentAdmin';
 import { reservations as mockReservations } from '../data/mockData';
+import { historyData, categoryEmojiMap } from '../data/historyData';
 
 type MenuItem = {
   id: string;
@@ -18,6 +20,8 @@ const menuItems: MenuItem[] = [
   { id: 'reservations', label: '예약 신청 내역 관리', icon: <Calendar className="w-4 h-4" /> },
   { id: 'experts', label: '지혜 전문가 관리', icon: <Users className="w-4 h-4" /> },
   { id: 'contents', label: '콘텐츠 관리', icon: <FileText className="w-4 h-4" /> },
+  { id: 'history', label: '연혁 관리', icon: <Clock className="w-4 h-4" /> },
+  { id: 'partners', label: '파트너사 로고 관리', icon: <Building2 className="w-4 h-4" /> },
   { id: 'settlement', label: '정산 관리', icon: <DollarSign className="w-4 h-4" /> },
   { id: 'inquiries', label: '기타문의 관리', icon: <MessageCircle className="w-4 h-4" /> },
   { id: 'admins', label: 'ADMIN 관리', icon: <Settings className="w-4 h-4" /> },
@@ -41,6 +45,10 @@ export default function AdminPage() {
         return <ExpertsContent />;
       case 'contents':
         return <ContentsContent />;
+      case 'history':
+        return <HistoryContent />;
+      case 'partners':
+        return <PartnersContent />;
       case 'settlement':
         return <SettlementContent />;
       case 'inquiries':
@@ -1323,6 +1331,231 @@ function YoutubeContentTab() {
     </div>
   );
 }
+function HistoryContent() {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [filterYear, setFilterYear] = useState<string>('all');
+
+  // historyData를 import하여 사용 (공통 데이터 소스)
+  // 관리 페이지용으로 플랫한 구조로 변환
+  const historyItems = historyData.flatMap(quarter => 
+    quarter.content.map((item, idx) => ({
+      id: `${quarter.id}-${idx}`,
+      year: quarter.year,
+      quarter: quarter.quarter,
+      category: item.category,
+      content: item.items.join(', '),
+      icon: categoryEmojiMap[item.category] || '📌',
+      createdAt: quarter.createdAt,
+      period: quarter.period
+    }))
+  );
+
+  const filteredItems = historyItems.filter(item => {
+    const yearMatch = filterYear === 'all' || item.year === filterYear;
+    return yearMatch;
+  });
+
+  const years = Array.from(new Set(historyItems.map(item => item.year))).sort().reverse();
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <h4 className="text-xs mb-2 text-blue-900" style={{ fontWeight: 600 }}>🕐 회사 연혁 관리</h4>
+        <div className="space-y-1.5 text-[0.625rem] text-blue-800" style={{ fontWeight: 400 }}>
+          <div className="flex gap-2"><span className="text-blue-600">•</span><div><strong style={{ fontWeight: 600 }}>기본 정보:</strong> 연도, 분기, 카테고리, 내용</div></div>
+          <div className="flex gap-2"><span className="text-blue-600">•</span><div><strong style={{ fontWeight: 600 }}>추가/수정:</strong> 연혁 항목을 추가하거나 수정할 수 있습니다</div></div>
+          <div className="flex gap-2"><span className="text-blue-600">•</span><div><strong style={{ fontWeight: 600 }}>삭제:</strong> 불필요한 연혁 항목을 삭제할 수 있습니다</div></div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm tracking-tight text-[#1e1e1e] mb-1" style={{ fontWeight: 600 }}>연혁 목록</h3>
+            <p className="text-xs text-gray-600" style={{ fontWeight: 400 }}>회사의 주요 연혁을 관리할 수 있습니다. (총 {filteredItems.length}개)</p>
+          </div>
+          <button onClick={() => setIsAddModalOpen(true)} className="px-3 py-1.5 text-xs bg-[#000050] text-white rounded-lg hover:bg-[#000070] transition-colors whitespace-nowrap" style={{ fontWeight: 500 }}>+ 연혁 추가</button>
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          <label className="text-xs" style={{ fontWeight: 500 }}>연도 필터:</label>
+          <select 
+            value={filterYear} 
+            onChange={(e) => setFilterYear(e.target.value)}
+            className="px-2 py-1 text-xs border border-gray-300 rounded-lg"
+            style={{ fontWeight: 400 }}
+          >
+            <option value="all">전체</option>
+            {years.map(year => (
+              <option key={year} value={year}>{year}년</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-3 py-2 text-xs" style={{ fontWeight: 600 }}>연도</th>
+                <th className="px-3 py-2 text-xs" style={{ fontWeight: 600 }}>분기</th>
+                <th className="px-3 py-2 text-xs" style={{ fontWeight: 600 }}>카테고리</th>
+                <th className="px-3 py-2 text-xs" style={{ fontWeight: 600 }}>내용</th>
+                <th className="px-3 py-2 text-xs" style={{ fontWeight: 600 }}>등록일</th>
+                <th className="px-3 py-2 text-xs text-center" style={{ fontWeight: 600 }}>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.map((item) => (
+                <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="px-3 py-2 text-xs text-gray-900" style={{ fontWeight: 600 }}>{item.year}</td>
+                  <td className="px-3 py-2 text-xs text-gray-600" style={{ fontWeight: 400 }}>{item.quarter}</td>
+                  <td className="px-3 py-2 text-xs text-gray-600" style={{ fontWeight: 400 }}>
+                    <span className="mr-1">{item.icon}</span>
+                    {item.category}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-gray-600" style={{ fontWeight: 400 }}>{item.content}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500" style={{ fontWeight: 400 }}>{item.createdAt}</td>
+                  <td className="px-3 py-2 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button 
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors" 
+                        style={{ fontWeight: 500 }}
+                      >
+                        수정
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (window.confirm('이 연혁 항목을 삭제하시겠습니까?')) {
+                            console.log('Delete:', item.id);
+                          }
+                        }}
+                        className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors" 
+                        style={{ fontWeight: 500 }}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 연혁 추가 모달 */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-base" style={{ fontWeight: 600 }}>연혁 추가</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>연도</label>
+                <input type="number" className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" placeholder="2025" style={{ fontWeight: 500 }} />
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>분기</label>
+                <select className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" style={{ fontWeight: 500 }}>
+                  <option value="">선택</option>
+                  <option value="1분기">1분기</option>
+                  <option value="2분기">2분기</option>
+                  <option value="3분기">3분기</option>
+                  <option value="4분기">4분기</option>
+                  <option value="3~4분기">3~4분기</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>카테고리</label>
+                <select className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" style={{ fontWeight: 500 }}>
+                  <option value="">선택</option>
+                  <option value="회사 설립">회사 설립</option>
+                  <option value="B2B 자문 계약">B2B 자문 계약</option>
+                  <option value="파트너 계약">파트너 계약</option>
+                  <option value="지혜전문가 계약 체결">지혜전문가 계약 체결</option>
+                  <option value="지혜전문가 출판">지혜전문가 출판</option>
+                  <option value="업무협약식">업무협약식</option>
+                  <option value="특허 출원">특허 출원</option>
+                  <option value="앱 서비스 출시">앱 서비스 출시</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>내용</label>
+                <textarea className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl" rows={3} placeholder="연혁 내용을 입력하세요" style={{ fontWeight: 500 }} />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" style={{ fontWeight: 500 }}>취소</button>
+                <button onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-sm text-white bg-[#000050] rounded-lg hover:bg-[#000070] transition-colors" style={{ fontWeight: 500 }}>저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 연혁 수정 모달 */}
+      {isEditModalOpen && selectedItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-base" style={{ fontWeight: 600 }}>연혁 수정</h3>
+              <button onClick={() => setIsEditModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>연도</label>
+                <input type="number" className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" defaultValue={selectedItem.year} style={{ fontWeight: 500 }} />
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>분기</label>
+                <select className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" defaultValue={selectedItem.quarter} style={{ fontWeight: 500 }}>
+                  <option value="1분기">1분기</option>
+                  <option value="2분기">2분기</option>
+                  <option value="3분기">3분기</option>
+                  <option value="4분기">4분기</option>
+                  <option value="3~4분기">3~4분기</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>카테고리</label>
+                <select className="w-full h-11 px-4 text-sm border-2 border-gray-300 rounded-xl" defaultValue={selectedItem.category} style={{ fontWeight: 500 }}>
+                  <option value="회사 설립">회사 설립</option>
+                  <option value="B2B 자문 계약">B2B 자문 계약</option>
+                  <option value="파트너 계약">파트너 계약</option>
+                  <option value="지혜전문가 계약 체결">지혜전문가 계약 체결</option>
+                  <option value="지혜전문가 출판">지혜전문가 출판</option>
+                  <option value="업무협약식">업무협약식</option>
+                  <option value="특허 출원">특허 출원</option>
+                  <option value="앱 서비스 출시">앱 서비스 출시</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs mb-2" style={{ fontWeight: 600 }}>내용</label>
+                <textarea className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl" rows={3} defaultValue={selectedItem.content} style={{ fontWeight: 500 }} />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" style={{ fontWeight: 500 }}>취소</button>
+                <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm text-white bg-[#000050] rounded-lg hover:bg-[#000070] transition-colors" style={{ fontWeight: 500 }}>저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminsContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

@@ -24,11 +24,13 @@
 ├─ /api                      # API 함수
 │  ├─ client.ts             # 기본 HTTP 클라이언트
 │  ├─ reservations.ts       # 예약 API
-│  └─ settlements.ts        # 정산 API
+│  ├─ settlements.ts        # 정산 API
+│  └─ partners.ts           # 파트너사 API
 │
 ├─ /hooks                    # React Query 훅
 │  ├─ useReservationQueries.ts
-│  └─ useSettlementQueries.ts
+│  ├─ useSettlementQueries.ts
+│  └─ usePartnerQueries.ts
 │
 ├─ /contexts                 # Context API
 │  └─ ReservationContext.tsx
@@ -36,6 +38,12 @@
 ├─ /providers               # Provider 통합
 │  ├─ QueryProvider.tsx
 │  └─ AppProviders.tsx
+│
+├─ /components              # 관리자 컴포넌트
+│  ├─ DashboardContent.tsx
+│  ├─ SettlementContent.tsx
+│  ├─ InquiriesContentAdmin.tsx
+│  └─ PartnersContentAdmin.tsx
 │
 └─ /data                    # Mock 데이터
    └─ mockData.ts
@@ -67,6 +75,12 @@ const USE_MOCK = false; // ⬅️ false로 변경
 ```
 
 **`/api/settlements.ts`** 파일에서도 동일하게 변경:
+
+```typescript
+const USE_MOCK = false; // ⬅️ false로 변경
+```
+
+**`/api/partners.ts`** 파일에서도 동일하게 변경:
 
 ```typescript
 const USE_MOCK = false; // ⬅️ false로 변경
@@ -463,6 +477,120 @@ GET /api/settlements/stats
 
 ---
 
+### 🏢 파트너사 API (Partners)
+
+#### 1. 파트너사 목록 조회
+
+```
+GET /api/partners
+```
+
+**Query Parameters:**
+```typescript
+{
+  page?: number;
+  limit?: number;
+  sortBy?: string;       // order|name
+  sortOrder?: 'asc'|'desc';
+}
+```
+
+**Response:**
+```typescript
+{
+  data: Partner[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+```
+
+#### 2. 파트너사 상세 조회
+
+```
+GET /api/partners/:id
+```
+
+**Response:**
+```typescript
+{
+  id: number;
+  name: string;
+  logoType: 'text' | 'image';
+  color?: string;          // logoType이 'text'일 때 필수
+  logoUrl?: string;        // logoType이 'image'일 때 필수
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### 3. 파트너사 생성
+
+```
+POST /api/partners
+```
+
+**Request Body:**
+```typescript
+{
+  name: string;
+  logoType: 'text' | 'image';
+  color?: string;          // logoType이 'text'일 때 필수
+  logoUrl?: string;        // logoType이 'image'일 때 필수
+  order?: number;          // 생략 시 자동 할당
+}
+```
+
+**Validation Rules:**
+- `logoType === 'text'`: `color` 필수 (예: #1428A0)
+- `logoType === 'image'`: `logoUrl` 필수 (이미지 URL)
+- `name`: 1-50자, 중복 불가
+- `color`: HEX 컬러 코드 (#RRGGBB)
+
+**Response:** 생성된 Partner
+
+#### 4. 파트너사 수정
+
+```
+PUT /api/partners/:id
+```
+
+**Request Body:** Partial<Partner>
+
+**Response:** 업데이트된 Partner
+
+#### 5. 파트너사 삭제
+
+```
+DELETE /api/partners/:id
+```
+
+**Response:** 204 No Content
+
+#### 6. 파트너사 순서 변경
+
+```
+PUT /api/partners/:id/order
+```
+
+**Request Body:**
+```typescript
+{
+  direction: 'up' | 'down';
+}
+```
+
+**동작:**
+- `up`: 현재 파트너사를 이전 파트너사와 순서 교환
+- `down`: 현재 파트너사를 다음 파트너사와 순서 교환
+- 이미 첫 번째/마지막인 경우 400 에러 반환
+
+**Response:** 업데이트된 Partner[]
+
+---
+
 ## 📊 데이터 모델
 
 ### Reservation (예약)
@@ -510,6 +638,19 @@ GET /api/settlements/stats
 | settlementDate | string | ❌ | 정산 완료일 |
 | paymentScheduledDate | string | ❌ | 지급 예정일 |
 | memo | string | ❌ | 메모 |
+
+### Partner (파트너사)
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| id | number | ✅ | 파트너사 ID (자동생성) |
+| name | string | ✅ | 파트너사 이름 (1-50자) |
+| logoType | enum | ✅ | 로고 타입 (text/image) |
+| color | string | ❌ | 로고 타입이 'text'일 때 필수 (HEX 컬러 코드) |
+| logoUrl | string | ❌ | 로고 타입이 'image'일 때 필수 (이미지 URL) |
+| order | number | ✅ | 표시 순서 (생략 시 자동 할당) |
+| createdAt | string | ✅ | 생성일시 |
+| updatedAt | string | ✅ | 수정일시 |
 
 ---
 
@@ -697,6 +838,7 @@ const USE_MOCK = false; // 실제 API 사용
 
 - [ ] `/api/reservations.ts`에서 `USE_MOCK = false`
 - [ ] `/api/settlements.ts`에서 `USE_MOCK = false`
+- [ ] `/api/partners.ts`에서 `USE_MOCK = false`
 - [ ] 모든 엔드포인트 URL 확인
 
 ### 보안 확인

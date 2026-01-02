@@ -7,6 +7,7 @@ interface SectionContainerProps {
   isHeroHeight?: boolean; // 히어로 섹션과 동일한 높이 적용
   alignItems?: "center" | "start"; // 정렬 방식 선택
   reducedTopPadding?: boolean; // 탭 네비게이션 이후 상단 패딩 축소
+  maxWidth?: string; // 커스텀 max-width 설정 가능
 }
 
 export default function SectionContainer({
@@ -16,6 +17,7 @@ export default function SectionContainer({
   isHeroHeight = false,
   alignItems = "center",
   reducedTopPadding = false,
+  maxWidth = "var(--section-max-width)",
 }: SectionContainerProps) {
   const bgColor = 
     backgroundColor === "white" 
@@ -40,7 +42,7 @@ export default function SectionContainer({
       <div
         className={`mx-auto ${paddingClass} ${heightClass} flex ${alignClass} justify-center`}
         style={{
-          maxWidth: "var(--section-max-width)",
+          maxWidth: maxWidth,
         }}
       >
         {children}

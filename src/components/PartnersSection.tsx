@@ -2,14 +2,14 @@ import { motion } from "motion/react";
 
 // 모든 파트너사를 하나의 배열로 통합
 const partners = [
-  { id: 1, name: "삼성전자", color: "#1428A0" },
-  { id: 2, name: "LG전자", color: "#A50034" },
-  { id: 4, name: "SK하이닉스", color: "#EA002C" },
-  { id: 5, name: "네이버", color: "#03C75A" },
-  { id: 6, name: "카카오", color: "#FEE500" },
-  { id: 7, name: "포스코", color: "#005BAC" },
-  { id: 8, name: "한국전력공사", color: "#003DA5" },
-  { id: 9, name: "KT", color: "#E30613" }
+  { id: 1, name: "삼성전자", logoType: "text", color: "#1428A0" },
+  { id: 2, name: "LG전자", logoType: "text", color: "#A50034" },
+  { id: 4, name: "SK하이닉스", logoType: "text", color: "#EA002C" },
+  { id: 5, name: "네이버", logoType: "text", color: "#03C75A" },
+  { id: 6, name: "카카오", logoType: "text", color: "#FEE500" },
+  { id: 7, name: "포스코", logoType: "text", color: "#005BAC" },
+  { id: 8, name: "한국전력공사", logoType: "text", color: "#003DA5" },
+  { id: 9, name: "KT", logoType: "text", color: "#E30613" }
 ];
 
 export default function PartnersSection() {
@@ -38,16 +38,24 @@ export default function PartnersSection() {
                 key={`partner-${partner.id}-${index}`}
                 className="flex-shrink-0 flex items-center justify-center px-4 py-4 md:px-5 md:py-5 bg-white rounded-2xl border-2 border-gray-100 shadow-md hover:shadow-xl hover:border-gray-200 transition-all duration-300 min-w-[128px] md:min-w-[162px]"
               >
-                <p
-                  className="text-[0.875rem] md:text-[1.1875rem] lg:text-[1.375rem] whitespace-nowrap"
-                  style={{ 
-                    fontFamily: 'Pretendard Variable, sans-serif', 
-                    fontWeight: 800,
-                    color: partner.color
-                  }}
-                >
-                  {partner.name}
-                </p>
+                {partner.logoType === 'text' ? (
+                  <p
+                    className="text-[0.875rem] md:text-[1.1875rem] lg:text-[1.375rem] whitespace-nowrap"
+                    style={{ 
+                      fontFamily: 'Pretendard Variable, sans-serif', 
+                      fontWeight: 800,
+                      color: partner.color
+                    }}
+                  >
+                    {partner.name}
+                  </p>
+                ) : (
+                  <img
+                    src={partner.logoUrl}
+                    alt={partner.name}
+                    className="max-h-[2rem] md:max-h-[2.5rem] max-w-full object-contain"
+                  />
+                )}
               </div>
             ))}
           </div>

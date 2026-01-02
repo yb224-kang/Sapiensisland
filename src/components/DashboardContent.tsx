@@ -43,7 +43,8 @@ import {
   getTopExperts,
   getRegionalDistribution,
   getTotalRevenue,
-  getAverageBookingAmount
+  getAverageBookingAmount,
+  settlements
 } from '../data/mockData';
 
 // 계산된 데이터 사용
@@ -53,6 +54,11 @@ const bookingStatusData = getBookingStatusData();
 const allRecentBookings = getRecentBookings();
 const topExperts = getTopExperts();
 const regionalData = getRegionalDistribution();
+
+// 정산 데이터 계산
+const totalSettlements = settlements.length;
+const completedSettlements = settlements.filter(s => s.settlementStatus === 'completed').length;
+const pendingSettlements = settlements.filter(s => s.settlementStatus === 'pending').length;
 
 // Treemap 데이터 생성
 const totalBookings = regionalData.reduce((sum, item) => sum + item.value, 0);
@@ -791,14 +797,14 @@ export default function DashboardContent() {
         />
         <KPICard
           title="정산"
-          value={45}
+          value={totalSettlements}
           change={15.2}
           icon={<Star className="w-5 h-5" />}
           iconColor="text-yellow-600"
           suffix="건"
           subMetrics={[
-            { label: '정산완료', value: 28, suffix: '건' },
-            { label: '정산예정', value: 17, suffix: '건' }
+            { label: '정산완료', value: completedSettlements, suffix: '건' },
+            { label: '정산예정', value: pendingSettlements, suffix: '건' }
           ]}
         />
       </div>
