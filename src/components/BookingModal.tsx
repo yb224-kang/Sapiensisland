@@ -5,6 +5,7 @@ import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight,
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
 import { useState, useEffect, useRef } from "react";
+import { useCreateReservation } from '../hooks/useReservationQueries';
 
 // Daum Postcode types
 declare global {
@@ -40,6 +41,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
   // Refs for scroll management
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const navigationButtonsRef = useRef<HTMLDivElement>(null);
+  
+  // React Query mutation for creating reservation
+  const createReservationMutation = useCreateReservation();
   
   // Form data for inquiry
   const [formData, setFormData] = useState({
@@ -166,10 +170,58 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }
   };
 
-  const handleSubmit = () => {
-    alert('예약이 완료되었습니다!\n\n실제 서비스에서는 이메일/SMS로 확인 메시지를 발송합니다.');
-    // Reset and close
-    handleClose();
+  const handleSubmit = async () => {
+    // 필수 필드 검증
+    if (!selectedDate || !selectedTime || !selectedExpert) {
+      alert('필수 정보가 누락되었습니다.');
+      return;
+    }
+
+    if (!formData.client || !formData.topic || !formData.contactName || 
+        !formData.contactPhone || !formData.contactEmail || !formData.fee) {
+      alert('모든 필수 항목을 입력해주세요.');
+      return;
+    }
+
+    // 날짜 형식 변환 (YYYY-MM-DD)
+    const reservationDate = selectedDate.toISOString().split('T')[0];
+    
+    // 지역 추출 (주소에서 또는 기본값)
+    // 주소가 있으면 우편번호로 지역 판단, 없으면 기본값
+    const region = addressPostcode ? '서울' : '서울'; // 임시로 기본값, 필요시 주소 파싱 로직 추가
+
+    // 예약 데이터 구성
+    const reservationData = {
+      reservationDate, // "2026-01-15"
+      reservationTime: selectedTime, // "14:00"
+      expertId: selectedExpert, // number
+      locationType, // 'online' | 'offline'
+      location: locationType === 'online' 
+        ? location 
+        : `${addressPostcode} ${addressDetail}`.trim(), // 오프라인일 경우 주소 조합
+      region, // string (필수)
+      agency: formData.agency || undefined, // optional
+      client: formData.client, // 필수
+      topic: formData.topic, // 필수
+      audience: formData.audience || undefined, // optional
+      contactName: formData.contactName, // 필수
+      contactPhone: formData.contactPhone, // 필수
+      contactEmail: formData.contactEmail, // 필수
+      fee: parseInt(formData.fee) || 0, // string을 number로 변환
+      message: formData.message || undefined, // optional
+    };
+
+    try {
+      await createReservationMutation.mutateAsync(reservationData);
+      alert('예약이 완료되었습니다!');
+      handleClose();
+    } catch (error: any) {
+      console.error('예약 생성 실패:', error);
+      const errorMessage = error?.response?.data?.message 
+        || error?.message 
+        || '알 수 없는 오류가 발생했습니다.';
+      alert(`예약 생성에 실패했습니다: ${errorMessage}`);
+    }
   };
 
   const handleClose = () => {
@@ -1053,10 +1105,11 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
             ) : (
               <Button
                 onClick={handleSubmit}
-                className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-8 py-5"
+                disabled={createReservationMutation.isPending}
+                className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-8 py-5 disabled:opacity-50"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
               >
-                예약 완료
+                {createReservationMutation.isPending ? '처리 중...' : '예약 완료'}
               </Button>
             )}
           </div>

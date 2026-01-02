@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useState } from "react";
+import { AppProviders } from "./providers/AppProviders";
 import Header from "./components/Header";
 import HomePage from "./components/HomePage";
 import AboutVisionPage from "./pages/about/AboutVisionPage";
@@ -187,7 +188,9 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AppContent />
+      <AppProviders>
+        <AppContent />
+      </AppProviders>
     </Router>
   );
 }

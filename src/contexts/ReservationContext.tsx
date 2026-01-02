@@ -13,18 +13,9 @@ import { createContext, useContext, useState, ReactNode, useCallback } from 'rea
 import {
   reservations as initialReservations,
   settlements as initialSettlements,
-  experts as initialExperts,
   monthlyStats as initialMonthlyStats,
-  getCompletedReservations,
-  getSettlementByReservationId,
-  getReservationById,
-  getReservationCountByStatus,
-  getReservationsByRegion,
-  getUnsettledReservationCount,
-  getTotalSettlementAmount,
   type Reservation,
   type Settlement,
-  type Expert,
   type MonthlyStats
 } from '../data/mockData';
 
@@ -36,7 +27,6 @@ interface ReservationContextType {
   // 데이터
   reservations: Reservation[];
   settlements: Settlement[];
-  experts: Expert[];
   monthlyStats: MonthlyStats[];
   
   // 예약 관리
@@ -89,7 +79,6 @@ export function ReservationProvider({ children }: ReservationProviderProps) {
   // 상태
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
   const [settlements, setSettlements] = useState<Settlement[]>(initialSettlements);
-  const [experts] = useState<Expert[]>(initialExperts);
   const [monthlyStats] = useState<MonthlyStats[]>(initialMonthlyStats);
   
   // 필터 상태
@@ -224,7 +213,6 @@ export function ReservationProvider({ children }: ReservationProviderProps) {
     // 데이터
     reservations,
     settlements,
-    experts,
     monthlyStats,
     
     // 예약 관리
