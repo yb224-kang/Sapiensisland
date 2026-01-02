@@ -19,7 +19,17 @@ import {
 // Mock 사용 여부
 // ============================================
 
-const USE_MOCK = true;
+// 환경 변수로 Mock 사용 여부 제어
+// VITE_USE_MOCK=false로 설정하면 실제 API 사용
+const getUseMock = () => {
+  try {
+    return import.meta.env.VITE_USE_MOCK !== 'false';
+  } catch {
+    return true; // 기본값: Mock 사용
+  }
+};
+
+const USE_MOCK = getUseMock();
 
 // ============================================
 // API 함수

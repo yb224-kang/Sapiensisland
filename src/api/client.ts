@@ -12,7 +12,15 @@
 // 환경 설정
 // ============================================
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const getApiBaseUrl = () => {
+  try {
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  } catch {
+    return 'http://localhost:3001/api';
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // ============================================
 // API Client 클래스

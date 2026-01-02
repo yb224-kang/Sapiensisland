@@ -6,8 +6,8 @@ import SettlementContent from '../components/SettlementContent';
 import DashboardContent from '../components/DashboardContent';
 import InquiryContent from '../components/InquiryContent';
 import PartnersContent from '../components/PartnersContentAdmin';
-import { reservations as mockReservations } from '../data/mockData';
 import { historyData, categoryEmojiMap } from '../data/historyData';
+import { useReservationsQuery } from '../hooks/useReservationQueries';
 
 type MenuItem = {
   id: string;
@@ -164,8 +164,11 @@ function ReservationsContent() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // 중앙 Mock 데이터 사용
-  const reservations = mockReservations;
+  // React Query로 실제 API 데이터 가져오기
+  const { data: reservationsData, isLoading, error } = useReservationsQuery({
+    status: filterStatus === 'all' ? undefined : filterStatus,
+  });
+  const reservations = reservationsData?.data || [];
 
   const statuses = [
     { value: 'all', label: '전체' },
@@ -175,9 +178,8 @@ function ReservationsContent() {
     { value: 'cancelled', label: '취소' }
   ];
 
-  const filteredReservations = filterStatus === 'all' 
-    ? reservations 
-    : reservations.filter(r => r.status === filterStatus);
+  // 필터링은 API에서 처리되므로, filterStatus가 'all'이 아닐 때는 이미 필터링된 데이터 사용
+  const filteredReservations = reservations;
 
   // Calendar helpers
   const generateCalendarDays = () => {
@@ -200,7 +202,13 @@ function ReservationsContent() {
 
   const getReservationsForDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return reservations.filter(r => r.reservationDate === dateStr);
+    return reservations.filter(r => {
+      // reservationDate가 string인 경우와 Date인 경우 모두 처리
+      const reservationDateStr = typeof r.reservationDate === 'string' 
+        ? r.reservationDate 
+        : r.reservationDate.split('T')[0];
+      return reservationDateStr === dateStr;
+    });
   };
 
   const goToPrevMonth = () => {
@@ -239,7 +247,7 @@ function ReservationsContent() {
               예약신청 내역
             </h3>
             <p className="text-xs text-gray-600" style={{ fontWeight: 400 }}>
-              고객의 예약 신청 내역을 확인하고 관리할 수 있습니다. (총 {filteredReservations.length}건)
+              고객의 예약 신청 내역을 확인하고 관리할 수 있습니다. {isLoading ? '(로딩 중...)' : `(총 ${filteredReservations.length}건)`}
             </p>
           </div>
 
@@ -283,24 +291,45 @@ function ReservationsContent() {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <p className="text-xs text-red-800" style={{ fontWeight: 600 }}>
+            데이터를 불러오는 중 오류가 발생했습니다: {error instanceof Error ? error.message : '알 수 없는 오류'}
+          </p>
+        </div>
+      )}
+
       {/* List View */}
       {viewMode === 'list' && (
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>신청일시</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>예약일시</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>전문가</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>주최사</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>담당자</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>장소</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>상태</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredReservations.map((item) => (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500">로딩 중...</p>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>신청일시</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>예약일시</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>전문가</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>주최사</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>담당자</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>장소</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>상태</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-700" style={{ fontWeight: 600 }}>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredReservations.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-3 py-8 text-center text-xs text-gray-500">
+                      예약 내역이 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredReservations.map((item) => (
                 <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-3 py-2 text-xs text-gray-600" style={{ fontWeight: 400 }}>{item.createdAt}</td>
                   <td className="px-3 py-2 text-xs text-gray-900" style={{ fontWeight: 500 }}>
@@ -335,9 +364,11 @@ function ReservationsContent() {
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
