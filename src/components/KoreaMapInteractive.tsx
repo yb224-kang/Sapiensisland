@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 import { motion } from 'motion/react';
 
 interface RegionData {
@@ -7,7 +7,6 @@ interface RegionData {
   shortName: string;
   count: number;
   percentage: string;
-  coordinates: [number, number]; // [lng, lat]
 }
 
 interface KoreaMapInteractiveProps {
@@ -37,112 +36,99 @@ const REGION_SHORT_NAMES: Record<string, string> = {
   '제주특별자치도': '제주'
 };
 
-// 지역별 실제 좌표 (위도/경도)
-const REGION_COORDINATES: Record<string, [number, number]> = {
-  '서울': [126.9780, 37.5665],
-  '경기': [127.2551, 37.4138],
-  '인천': [126.7052, 37.4563],
-  '강원': [128.2093, 37.8228],
-  '충북': [127.4893, 36.6357],
-  '충남': [126.8000, 36.5184],
-  '세종': [127.2890, 36.4800],
-  '대전': [127.3845, 36.3504],
-  '경북': [128.8889, 36.4919],
-  '대구': [128.6014, 35.8714],
-  '전북': [127.1530, 35.7175],
-  '광주': [126.8526, 35.1595],
-  '전남': [126.9910, 34.8679],
-  '경남': [128.2132, 35.4606],
-  '울산': [129.3114, 35.5384],
-  '부산': [129.0756, 35.1796],
-  '제주': [126.5312, 33.4996]
+// TopoJSON 지역명 → 우리 데이터 매핑
+const TOPO_TO_DATA_MAPPING: Record<string, string> = {
+  '서울특별시': '서울특별시',
+  '부산광역시': '부산광역시',
+  '대구광역시': '대구광역시',
+  '인천광역시': '인천광역시',
+  '광주광역시': '광주광역시',
+  '대전광역시': '대전광역시',
+  '울산광역시': '울산광역시',
+  '세종특별자치시': '세종특별자치시',
+  '경기도': '경기도',
+  '강원도': '강원특별자치도',
+  '강원특별자치도': '강원특별자치도',
+  '충청북도': '충청북도',
+  '충청남도': '충청남도',
+  '전라북도': '전북특별자치도',
+  '전북특별자치도': '전북특별자치도',
+  '전라남도': '전라남도',
+  '경상북도': '경상북도',
+  '경상남도': '경상남도',
+  '제주특별자치도': '제주특별자치도'
 };
 
 // 한국 TopoJSON URL (공개 데이터)
 const KOREA_TOPO_JSON = "https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-topo-simple.json";
 
 export default function KoreaMapInteractive({ regionStats, totalReservations, avgReservations }: KoreaMapInteractiveProps) {
-  const [hoveredRegion, setHoveredRegion] = useState<RegionData | null>(null);
-  const [viewMode, setViewMode] = useState<'bubble' | 'heatmap'>('heatmap');
+  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
 
-  // 지역 데이터 가공
-  const regionData: RegionData[] = regionStats.map(([region, count]) => {
+  // 최소/최대 예약 건수 계산
+  const minReservations = Math.min(...regionStats.map(([, count]) => count));
+  const maxReservations = Math.max(...regionStats.map(([, count]) => count));
+
+  // 지역 데이터 Map으로 변환 (빠른 조회)
+  const regionDataMap = new Map<string, RegionData>();
+  regionStats.forEach(([region, count]) => {
     const shortName = REGION_SHORT_NAMES[region] || region;
     const percentage = ((count / totalReservations) * 100).toFixed(1);
-    const coordinates = REGION_COORDINATES[shortName] || [127.5, 36.5];
     
-    return {
+    regionDataMap.set(region, {
       name: region,
       shortName,
       count,
-      percentage,
-      coordinates
-    };
+      percentage
+    });
   });
 
-  // 최대값 계산
-  const maxCount = Math.max(...regionData.map(r => r.count));
-
-  // 색상 계산
-  const getColor = (count: number) => {
-    const diffFromAvg = ((count - avgReservations) / avgReservations) * 100;
-    if (diffFromAvg > 50) return '#16a34a'; // 진한 초록
-    if (diffFromAvg > 20) return '#22c55e'; // 초록
-    if (diffFromAvg > 0) return '#4ade80'; // 연한 초록
-    if (diffFromAvg > -20) return '#f87171'; // 연한 빨강
-    if (diffFromAvg > -50) return '#ef4444'; // 빨강
-    return '#dc2626'; // 진한 빨강
+  // 색상 계산 - 그라데이션 (연한 파란색 → 진한 파란색)
+  const getColor = (count: number | undefined) => {
+    // 예약 없음 → 회색
+    if (count === undefined || count === 0) return '#e5e7eb';
+    
+    // 정규화 (0 ~ 1)
+    const ratio = minReservations === maxReservations ? 0.5 : (count - minReservations) / (maxReservations - minReservations);
+    
+    // 5단계 그라데이션
+    if (ratio >= 0.8) return '#1e3a8a'; // 가장 진한 파란색
+    if (ratio >= 0.6) return '#2563eb'; // 진한 파란색
+    if (ratio >= 0.4) return '#3b82f6'; // 중간 파란색
+    if (ratio >= 0.2) return '#60a5fa'; // 연한 파란색
+    return '#93c5fd'; // 가장 연한 파란색
   };
 
-  // 버블 크기 계산
-  const getBubbleSize = (count: number) => {
-    const ratio = count / maxCount;
-    return Math.sqrt(ratio) * 20 + 5; // 5px ~ 25px
+  // 지역 데이터 가져오기
+  const getRegionData = (geoName: string): RegionData | undefined => {
+    const mappedName = TOPO_TO_DATA_MAPPING[geoName];
+    return mappedName ? regionDataMap.get(mappedName) : undefined;
   };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* 헤더 */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <div>
-          <h3 
-            className="text-[#1e1e1e]"
-            style={{ 
-              fontFamily: 'Pretendard Variable, sans-serif', 
-              fontWeight: 700, 
-              fontSize: '1.125rem',
-              letterSpacing: 'var(--letter-spacing-snug)'
-            }}
-          >
-            지역별 예약현황
-          </h3>
-        </div>
-
-        {/* 뷰 모드 토글 */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setViewMode('bubble')}
-            className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
-              viewMode === 'bubble'
-                ? 'bg-[#000050] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-            style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-          >
-            버블
-          </button>
-          <button
-            onClick={() => setViewMode('heatmap')}
-            className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
-              viewMode === 'heatmap'
-                ? 'bg-[#000050] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-            style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-          >
-            히트맵
-          </button>
-        </div>
+      <div className="p-4 border-b border-gray-200">
+        <h3 
+          className="text-[#1e1e1e]"
+          style={{ 
+            fontFamily: 'Pretendard Variable, sans-serif', 
+            fontWeight: 700, 
+            fontSize: '1.125rem',
+            letterSpacing: 'var(--letter-spacing-snug)'
+          }}
+        >
+          지역별 예약현황
+        </h3>
+        <p 
+          className="text-gray-500 text-xs mt-1"
+          style={{ 
+            fontFamily: 'Pretendard Variable, sans-serif', 
+            fontWeight: 400 
+          }}
+        >
+          색상이 진할수록 예약이 많은 지역입니다
+        </p>
       </div>
 
       {/* 지도 컨테이너 */}
@@ -150,7 +136,7 @@ export default function KoreaMapInteractive({ regionStats, totalReservations, av
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 4975,
+            scale: 5970,
             center: [127.8, 35.8]
           }}
           width={800}
@@ -158,100 +144,42 @@ export default function KoreaMapInteractive({ regionStats, totalReservations, av
           style={{ width: '100%', height: '100%' }}
         >
           <ZoomableGroup center={[127.8, 35.8]} zoom={1}>
-            {/* 배경 (한국 영역) */}
             <Geographies geography={KOREA_TOPO_JSON}>
               {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="#e5e7eb"
-                    stroke="#9ca3af"
-                    strokeWidth={0.5}
-                  />
-                ))
+                geographies.map((geo) => {
+                  const geoName = geo.properties.name || geo.properties.CTP_KOR_NM || '';
+                  const regionData = getRegionData(geoName);
+                  const fillColor = getColor(regionData?.count);
+
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={fillColor}
+                      stroke="#ffffff"
+                      strokeWidth={1.5}
+                      style={{
+                        default: { outline: 'none' },
+                        hover: { 
+                          fill: fillColor, 
+                          opacity: 0.8,
+                          outline: 'none',
+                          cursor: 'pointer'
+                        },
+                        pressed: { outline: 'none' }
+                      }}
+                      onMouseEnter={() => setHoveredRegion(geoName)}
+                      onMouseLeave={() => setHoveredRegion(null)}
+                    />
+                  );
+                })
               }
             </Geographies>
-
-            {/* 마커 (버블 또는 히트맵) */}
-            {regionData.map((region, index) => {
-              const size = getBubbleSize(region.count);
-              const color = getColor(region.count);
-
-              return (
-                <Marker
-                  key={`${region.name}-${index}`}
-                  coordinates={region.coordinates}
-                  onMouseEnter={() => setHoveredRegion(region)}
-                  onMouseLeave={() => setHoveredRegion(null)}
-                >
-                  {viewMode === 'bubble' ? (
-                    <motion.g
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <circle
-                        r={size}
-                        fill={color}
-                        stroke="white"
-                        strokeWidth={2}
-                        fillOpacity={0.8}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <text
-                        textAnchor="middle"
-                        y={size + 15}
-                        style={{
-                          fontFamily: 'Pretendard Variable, sans-serif',
-                          fontSize: '10px',
-                          fontWeight: 600,
-                          fill: '#1e1e1e'
-                        }}
-                      >
-                        {region.shortName}
-                      </text>
-                    </motion.g>
-                  ) : (
-                    <motion.g
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <circle
-                        r={size * 2}
-                        fill={color}
-                        fillOpacity={0.3}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <circle
-                        r={size}
-                        fill={color}
-                        fillOpacity={0.6}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <text
-                        textAnchor="middle"
-                        y={size * 2 + 15}
-                        style={{
-                          fontFamily: 'Pretendard Variable, sans-serif',
-                          fontSize: '10px',
-                          fontWeight: 600,
-                          fill: '#1e1e1e'
-                        }}
-                      >
-                        {region.shortName}
-                      </text>
-                    </motion.g>
-                  )}
-                </Marker>
-              );
-            })}
           </ZoomableGroup>
         </ComposableMap>
 
         {/* 호버 툴팁 */}
-        {hoveredRegion && (
+        {hoveredRegion && getRegionData(hoveredRegion) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -262,17 +190,17 @@ export default function KoreaMapInteractive({ regionStats, totalReservations, av
               className="text-sm mb-1"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
             >
-              {hoveredRegion.name}
+              {getRegionData(hoveredRegion)?.name}
             </p>
             <p 
               className="text-xs text-gray-300"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
             >
-              예약: {hoveredRegion.count}건 ({hoveredRegion.percentage}%)
+              예약: {getRegionData(hoveredRegion)?.count}건 ({getRegionData(hoveredRegion)?.percentage}%)
             </p>
             <div className="mt-2 pt-2 border-t border-gray-700">
-              <p className="text-[0.625rem] text-gray-400">
-                평균 대비: {(((hoveredRegion.count - avgReservations) / avgReservations) * 100).toFixed(1)}%
+              <p className="text-[0.625rem] text-gray-400 tabular-nums">
+                평균 대비: {(((getRegionData(hoveredRegion)!.count - avgReservations) / avgReservations) * 100).toFixed(1)}%
               </p>
             </div>
           </motion.div>
@@ -300,16 +228,29 @@ export default function KoreaMapInteractive({ regionStats, totalReservations, av
               className="text-xs text-gray-700 mb-2"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
             >
-              📊 데이터 범례
+              📊 데이터 범례 (예약 건수 기준)
             </p>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#16a34a' }} />
-                <span className="text-[0.625rem] text-gray-600">평균 이상</span>
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#e5e7eb' }} />
+                <span className="text-[0.625rem] text-gray-600">없음</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#ef4444' }} />
-                <span className="text-[0.625rem] text-gray-600">평균 이하</span>
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#93c5fd' }} />
+                <span className="text-[0.625rem] text-gray-600 tabular-nums">{minReservations}건</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#60a5fa' }} />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#2563eb' }} />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#1e3a8a' }} />
+                <span className="text-[0.625rem] text-gray-600 tabular-nums">{maxReservations}건</span>
               </div>
             </div>
           </div>

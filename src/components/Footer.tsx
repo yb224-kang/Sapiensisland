@@ -53,7 +53,7 @@ export default function Footer() {
 
               {/* Contact Link */}
               <Link
-                to="/contact/location"
+                to="/about/location"
                 className="text-[0.8125rem] sm:text-[0.875rem] md:text-[1rem] tracking-[-0.08px] leading-[1.5] text-gray-300 hover:text-white transition-colors duration-200 inline-flex items-center gap-1"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
               >

@@ -13,11 +13,6 @@ export default function ContactInquiryPage() {
     contactEmail: ""
   });
 
-  const tabs = [
-    { id: "inquiry", label: "기타문의", path: "/inquiry" },
-    { id: "location", label: "연락처 / 오시는길", path: "/location" }
-  ];
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     alert("문의가 접수되었습니다. 빠른 시일 내에 답변드리겠습니다.");
@@ -34,8 +29,6 @@ export default function ContactInquiryPage() {
       description="사피엔스아일랜드와 함께 성장할 기회를 만들어보세요.<br class='hidden md:block' />언제든지 문의 주시면 신속하게 답변드리겠습니다."
       backgroundImage="https://www.openaccessgovernment.org/wp-content/uploads/2024/05/iStock-2092734289-e1715601027881.jpg"
       backgroundAlt="Communication and contact"
-      tabs={tabs}
-      basePath="/contact"
     >
       {/* Inquiry Form Section */}
       <SectionContainer backgroundColor="light" reducedTopPadding>

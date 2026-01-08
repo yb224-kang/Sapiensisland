@@ -8,7 +8,6 @@
 
 import { ReactNode } from 'react';
 import { QueryProvider } from './QueryProvider';
-import { ReservationProvider } from '../contexts/ReservationContext';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -17,9 +16,7 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryProvider>
-      <ReservationProvider>
-        {children}
-      </ReservationProvider>
+      {children}
     </QueryProvider>
   );
 }

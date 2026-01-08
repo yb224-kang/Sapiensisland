@@ -4,8 +4,26 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
-import { useState, useEffect, useRef } from "react";
-import { useCreateReservation } from '../hooks/useReservationQueries';
+import { useState, useEffect, useRef, useMemo } from "react";
+// TODO: Cursor로 hooks 재생성 후 주석 해제
+// import { useCreateReservation } from '../hooks/useReservationQueries';
+
+// 임시 mock hook (Cursor로 hooks 재생성 후 삭제)
+const useCreateReservation = () => {
+  return {
+    mutateAsync: async (data: any) => {
+      console.log('예약 데이터 (Mock):', data);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ success: true, data: { id: Date.now() } });
+        }, 1000);
+      });
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+  };
+};
 
 // Daum Postcode types
 declare global {
@@ -17,10 +35,45 @@ declare global {
 // Booking step types
 type BookingStep = 'expert' | 'datetime' | 'location' | 'details' | 'confirm';
 
+// Generate time slots (30-minute intervals)
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = 9; hour <= 18; hour++) {
+    slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    if (hour < 18) {
+      slots.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+  }
+  return slots;
+};
+
+const timeSlots = generateTimeSlots();
+
 // Mock available times
 const availableTimes = [
   "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"
 ];
+
+// 시/도/군 데이터
+const cityDistrictData: Record<string, string[]> = {
+  '서울특별시': ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'],
+  '부산광역시': ['강서구', '금정구', '남구', '동구', '동래구', '부산진구', '북구', '사상구', '사하구', '서구', '수영구', '연제구', '영도구', '중구', '해운대구', '기장군'],
+  '대구광역시': ['남구', '달서구', '동구', '북구', '서구', '수성구', '중구', '달성군'],
+  '인천광역시': ['계양구', '남동구', '동구', '미추홀구', '부평구', '서구', '연수구', '중구', '강화군', '옹진군'],
+  '광주광역시': ['광산구', '남구', '동구', '북구', '서구'],
+  '대전광역시': ['대덕구', '동구', '서구', '유성구', '중구'],
+  '울산광역시': ['남구', '동구', '북구', '중구', '울주군'],
+  '세종특별자치시': ['세종시'],
+  '경기도': ['수원시', '성남시', '고양시', '용인시', '부천시', '안산시', '안양시', '남양주시', '화성시', '평택시', '의정부시', '시흥시', '파주시', '김포시', '광명시', '광주시', '군포시', '오산시', '이천시', '양주시', '하남시', '구리시', '안성시', '포천시', '의왕시', '양평군', '여주시', '동두천시', '과천시', '가평군', '연천군'],
+  '강원도': ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'],
+  '충청북도': ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'],
+  '충청남도': ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'],
+  '전라북도': ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'],
+  '전라남도': ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'],
+  '경상북도': ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '군위군', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'],
+  '경상남도': ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'],
+  '제주특별자치도': ['제주시', '서귀포시']
+};
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -33,10 +86,31 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
   const [selectedExpert, setSelectedExpert] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [locationType, setLocationType] = useState<'online' | 'offline'>('online');
+  const [selectedEndTime, setSelectedEndTime] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartTime, setDragStartTime] = useState<string | null>(null);
+  
+  // Mock unavailable times (in real app, this would come from API based on selected date)
+  const [unavailableTimes] = useState<string[]>(() => {
+    // Randomly select some times as unavailable for demo
+    const unavailable: string[] = [];
+    timeSlots.forEach((slot) => {
+      if (Math.random() > 0.8) { // 20% chance of being unavailable
+        unavailable.push(slot);
+      }
+    });
+    return unavailable;
+  });
+  
+  const [locationType, setLocationType] = useState<'confirmed' | 'undecided'>('confirmed');
   const [location, setLocation] = useState('');
   const [addressPostcode, setAddressPostcode] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
+  
+  // 장소미정 시 시/도/군 선택
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
   
   // Refs for scroll management
   const dialogContentRef = useRef<HTMLDivElement>(null);
@@ -66,6 +140,20 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }
   }, [preSelectedExpertId]);
 
+  // Global mouse up handler to end dragging (prevents date change during time drag)
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        handleTimeMouseUp();
+      }
+    };
+
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging]);
+
   // Scroll to top when step changes
   useEffect(() => {
     const dialogElement = document.querySelector('[role="dialog"]');
@@ -92,10 +180,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     if (currentStep === 'expert' && selectedExpert !== null) {
       scrollToButtons();
     }
-    // Step 2: Date & Time selected
-    if (currentStep === 'datetime' && selectedDate !== null && selectedTime !== null) {
-      scrollToButtons();
-    }
+    // Step 2: Date selected - removed scroll (better UX)
     // Step 3: Location selected
     if (currentStep === 'location' && canProceedToNext()) {
       scrollToButtons();
@@ -106,8 +191,8 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }
   }, [selectedExpert, selectedDate, selectedTime, locationType, location, currentStep]);
 
-  // Generate calendar days for current month
-  const generateCalendarDays = () => {
+  // Generate calendar days for current month (memoized to prevent re-renders)
+  const calendarDays = useMemo(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
@@ -126,11 +211,24 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }
 
     return days;
-  };
+  }, []); // Empty deps - only generate once on mount
 
-  const calendarDays = generateCalendarDays();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  
+  // Generate fixed availability map (memoized to prevent random changes)
+  const dateAvailability = useMemo(() => {
+    const availabilityMap = new Map<string, boolean>();
+    calendarDays.forEach((day) => {
+      if (day) {
+        const isPast = day < today;
+        const dateKey = day.toISOString();
+        // Generate consistent availability (70% of future dates are available)
+        availabilityMap.set(dateKey, !isPast && Math.random() > 0.3);
+      }
+    });
+    return availabilityMap;
+  }, [calendarDays]);
 
   const selectedExpertData = professors.find(p => p.id === selectedExpert);
 
@@ -148,7 +246,13 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     switch (currentStep) {
       case 'expert': return selectedExpert !== null;
       case 'datetime': return selectedDate !== null && selectedTime !== null;
-      case 'location': return locationType === 'online' || (locationType === 'offline' && location.trim() !== '');
+      case 'location': 
+        if (locationType === 'confirmed') {
+          return location.trim() !== '';
+        } else if (locationType === 'undecided') {
+          return selectedCity.trim() !== '' && selectedDistrict.trim() !== '';
+        }
+        return false;
       case 'details': return formData.agency.trim() !== '' && formData.client.trim() !== '' && formData.contactName.trim() !== '' && formData.contactPhone.trim() !== '' && formData.contactEmail.trim() !== '';
       default: return true;
     }
@@ -229,6 +333,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     setSelectedExpert(null);
     setSelectedDate(null);
     setSelectedTime(null);
+    setSelectedEndTime(null);
+    setIsDragging(false);
+    setDragStartTime(null);
     setLocationType('online');
     setLocation('');
     setAddressPostcode('');
@@ -281,9 +388,97 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }).open();
   };
 
+  // Time range selection handlers
+  const handleTimeMouseDown = (e: React.MouseEvent, time: string, isAvailable: boolean) => {
+    if (!isAvailable) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsDragging(true);
+    setDragStartTime(time);
+    setSelectedTime(time);
+    setSelectedEndTime(time);
+  };
+
+  const handleTimeMouseEnter = (time: string) => {
+    if (!isDragging || !dragStartTime) return;
+    
+    // Check if current time is unavailable
+    if (unavailableTimes.includes(time)) return;
+    
+    const startIndex = timeSlots.indexOf(dragStartTime);
+    const currentIndex = timeSlots.indexOf(time);
+    
+    // Check if there are any unavailable slots in the range
+    const minIndex = Math.min(startIndex, currentIndex);
+    const maxIndex = Math.max(startIndex, currentIndex);
+    
+    const slotsInRange = timeSlots.slice(minIndex, maxIndex + 1);
+    const hasUnavailableInRange = slotsInRange.some(slot => unavailableTimes.includes(slot));
+    
+    if (hasUnavailableInRange) return; // Don't update selection if unavailable slots in range
+    
+    if (currentIndex >= startIndex) {
+      setSelectedTime(dragStartTime);
+      setSelectedEndTime(time);
+    } else {
+      setSelectedTime(time);
+      setSelectedEndTime(dragStartTime);
+    }
+  };
+
+  const handleTimeMouseUp = () => {
+    setIsDragging(false);
+    setDragStartTime(null);
+    
+    // Scroll to bottom when drag is complete (time selection is done)
+    if (selectedTime && selectedEndTime) {
+      setTimeout(() => {
+        const dialogElement = document.querySelector('[role="dialog"]');
+        if (dialogElement) {
+          dialogElement.scrollTo({
+            top: dialogElement.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  };
+
+  // Check if time is in selected range
+  const isTimeInRange = (time: string, start: string, end: string) => {
+    const timeIndex = timeSlots.indexOf(time);
+    const startIndex = timeSlots.indexOf(start);
+    const endIndex = timeSlots.indexOf(end);
+    
+    return timeIndex > startIndex && timeIndex < endIndex;
+  };
+
+  // Calculate duration between two times
+  const calculateDuration = (start: string, end: string) => {
+    const startIndex = timeSlots.indexOf(start);
+    const endIndex = timeSlots.indexOf(end);
+    
+    if (startIndex === -1 || endIndex === -1) return '';
+    
+    const slots = endIndex - startIndex;
+    const hours = Math.floor(slots / 2);
+    const minutes = (slots % 2) * 30;
+    
+    if (hours === 0) return `${minutes}분`;
+    if (minutes === 0) return `${hours}시간`;
+    return `${hours}시간 ${minutes}분`;
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[56rem] max-h-[90vh] overflow-y-auto p-0 gap-0" aria-describedby={undefined}>
+    <Dialog open={isOpen} onOpenChange={handleClose} modal>
+      <DialogContent 
+        className="max-w-[56rem] max-h-[90vh] overflow-y-auto p-0 gap-0" 
+        aria-describedby={undefined}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         {/* Accessible Title - Hidden visually but available for screen readers */}
         <DialogTitle className="sr-only">
           강연문의하기 {selectedExpertData ? `- ${selectedExpertData.name}` : ''}
@@ -403,8 +598,8 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
           </div>
         </div>
 
-        {/* Content */}
-        <div className="px-8 py-10 relative z-0">
+        {/* Body */}
+        <div className="px-8 py-6 relative z-0">
           {/* Step Content */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -467,7 +662,10 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
               {currentStep === 'datetime' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left: Calendar */}
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <div 
+                    className="bg-gray-50 rounded-xl p-6 border border-gray-200"
+                    style={{ pointerEvents: isDragging ? 'none' : 'auto' }}
+                  >
                     <div className="flex items-center justify-between mb-6">
                       <h4
                         className="text-[var(--section-text-primary)] m-0"
@@ -476,10 +674,16 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                         📅 날짜 선택
                       </h4>
                       <div className="flex gap-2">
-                        <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                        <button 
+                          disabled={isDragging}
+                          className="p-2 hover:bg-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <ChevronLeft className="w-5 h-5 text-gray-600" />
                         </button>
-                        <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                        <button 
+                          disabled={isDragging}
+                          className="p-2 hover:bg-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <ChevronRight className="w-5 h-5 text-gray-600" />
                         </button>
                       </div>
@@ -510,14 +714,18 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
 
                         const isPast = day < today;
                         const isSelected = selectedDate?.getTime() === day.getTime();
-                        const isAvailable = !isPast && Math.random() > 0.3; // Mock availability
+                        const isAvailable = dateAvailability.get(day.toISOString()) ?? false;
 
                         return (
                           <motion.button
                             key={day.toISOString()}
-                            whileHover={isAvailable ? { scale: 1.1 } : {}}
-                            onClick={() => isAvailable && setSelectedDate(day)}
-                            disabled={!isAvailable}
+                            whileHover={isAvailable && !isDragging ? { scale: 1.1 } : {}}
+                            onClick={() => {
+                              if (isAvailable && !isDragging) {
+                                setSelectedDate(day);
+                              }
+                            }}
+                            disabled={!isAvailable || isDragging}
                             className={`aspect-square rounded-lg flex items-center justify-center text-[13px] transition-all duration-200 ${
                               isSelected
                                 ? 'bg-[var(--section-brand-primary)] text-white shadow-lg'
@@ -556,31 +764,105 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="grid grid-cols-3 gap-3"
+                        className="space-y-3"
                       >
-                        {availableTimes.map((time) => {
-                          const isSelected = selectedTime === time;
-                          const isAvailable = Math.random() > 0.2; // Mock availability
+                        {/* Instructions */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                          <p
+                            className="text-blue-700 text-[12px] m-0"
+                            style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                          >
+                            💡 드래그하여 시간 범위를 선택하세요
+                          </p>
+                        </div>
 
-                          return (
-                            <motion.button
-                              key={time}
-                              whileHover={isAvailable ? { scale: 1.05 } : {}}
-                              onClick={() => isAvailable && setSelectedTime(time)}
-                              disabled={!isAvailable}
-                              className={`py-4 px-4 rounded-lg transition-all duration-200 ${
-                                isSelected
-                                  ? 'bg-[var(--section-brand-primary)] text-white shadow-lg'
-                                  : isAvailable
-                                  ? 'bg-white hover:bg-[var(--section-brand-primary)]/10 text-[var(--section-text-primary)]'
-                                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              }`}
-                              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
-                            >
-                              {time}
-                            </motion.button>
-                          );
-                        })}
+                        {/* Google Calendar Style Timeline */}
+                        <div 
+                          className="relative bg-white border border-gray-200 rounded-lg overflow-hidden max-h-[400px] overflow-y-auto select-none"
+                          onMouseLeave={() => {
+                            if (isDragging) {
+                              handleTimeMouseUp();
+                            }
+                          }}
+                        >
+                          {/* Time Grid */}
+                          <div className="relative" style={{ userSelect: 'none' }}>
+                            {timeSlots.map((time, index) => {
+                              const isAvailable = !unavailableTimes.includes(time);
+                              const isHourMark = time.endsWith(':00');
+
+                              return (
+                                <div
+                                  key={time}
+                                  onMouseDown={(e) => handleTimeMouseDown(e, time, isAvailable)}
+                                  onMouseEnter={() => handleTimeMouseEnter(time)}
+                                  onMouseUp={() => handleTimeMouseUp()}
+                                  className={`relative flex items-start border-b transition-colors ${
+                                    isAvailable ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'
+                                  }`}
+                                  style={{ 
+                                    height: '2.5rem',
+                                    borderColor: isHourMark ? '#d1d5db' : '#e5e7eb',
+                                    userSelect: 'none'
+                                  }}
+                                >
+                                  {/* Time Label */}
+                                  <div className="w-20 flex-shrink-0 px-3 py-1">
+                                    {isHourMark && (
+                                      <span
+                                        className="text-[11px] text-[var(--section-text-secondary)]"
+                                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                                      >
+                                        {time}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Unavailable Overlay */}
+                                  {!isAvailable && (
+                                    <div className="absolute left-20 right-0 top-0 bottom-0 bg-red-50/80 border-l-4 border-red-400 flex items-center px-3">
+                                      <span
+                                        className="text-[10px] text-red-600"
+                                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                                      >
+                                        예약됨
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+
+                            {/* Selected Range Overlay */}
+                            {selectedTime && selectedEndTime && (() => {
+                              const startIndex = timeSlots.indexOf(selectedTime);
+                              const endIndex = timeSlots.indexOf(selectedEndTime);
+                              const top = startIndex * 2.5; // rem
+                              const height = (endIndex - startIndex + 1) * 2.5; // rem
+
+                              return (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="absolute left-20 right-0 bg-[var(--section-brand-primary)]/90 border-l-4 border-[var(--section-brand-primary)] rounded-r-lg shadow-lg pointer-events-none"
+                                  style={{
+                                    top: `${top}rem`,
+                                    height: `${height}rem`,
+                                  }}
+                                >
+                                  <div className="p-3 text-white">
+                                    <p
+                                      className="text-[13px] m-0"
+                                      style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
+                                    >
+                                      선택된 일정 {selectedTime} - {selectedEndTime}
+                                    </p>
+                                  </div>
+                                </motion.div>
+                              );
+                            })()}
+                          </div>
+                        </div>
                       </motion.div>
                     )}
                   </div>
@@ -591,70 +873,80 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
               {currentStep === 'location' && (
                 <div>
                   {/* Location Type Selection */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setLocationType('online')}
-                      className={`p-8 rounded-2xl border-2 transition-all duration-300 ${
-                        locationType === 'online'
+                      onClick={() => {
+                        setLocationType('confirmed');
+                        setSelectedCity('');
+                        setSelectedDistrict('');
+                        setSelectedRegion('');
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                        locationType === 'confirmed'
                           ? 'border-[var(--section-brand-primary)] bg-[var(--section-brand-primary)]/5 shadow-lg'
                           : 'border-gray-200 hover:border-[var(--section-brand-primary)]/50'
                       }`}
                     >
-                      <div className="flex flex-col items-center text-center gap-3">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                          locationType === 'online' ? 'bg-[var(--section-brand-primary)]' : 'bg-gray-100'
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          locationType === 'confirmed' ? 'bg-[var(--section-brand-primary)]' : 'bg-gray-100'
                         }`}>
-                          <Calendar className={`w-8 h-8 ${locationType === 'online' ? 'text-white' : 'text-gray-400'}`} />
+                          <MapPin className={`w-5 h-5 ${locationType === 'confirmed' ? 'text-white' : 'text-gray-400'}`} />
                         </div>
                         <h4
                           className="text-[var(--section-text-primary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '0.875rem' }}
                         >
-                          온라인 상담
+                          장소확정
                         </h4>
                         <p
                           className="text-[var(--section-text-secondary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.8125rem' }}
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.6875rem' }}
                         >
-                          Zoom, Google Meet 등을 통한<br />온라인 화상 상담
+                          정확한 주소가<br />확정된 경우
                         </p>
                       </div>
                     </motion.button>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setLocationType('offline')}
-                      className={`p-8 rounded-2xl border-2 transition-all duration-300 ${
-                        locationType === 'offline'
+                      onClick={() => {
+                        setLocationType('undecided');
+                        setLocation('');
+                        setAddressPostcode('');
+                        setAddressDetail('');
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                        locationType === 'undecided'
                           ? 'border-[var(--section-brand-primary)] bg-[var(--section-brand-primary)]/5 shadow-lg'
                           : 'border-gray-200 hover:border-[var(--section-brand-primary)]/50'
                       }`}
                     >
-                      <div className="flex flex-col items-center text-center gap-3">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                          locationType === 'offline' ? 'bg-[var(--section-brand-primary)]' : 'bg-gray-100'
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          locationType === 'undecided' ? 'bg-[var(--section-brand-primary)]' : 'bg-gray-100'
                         }`}>
-                          <MapPin className={`w-8 h-8 ${locationType === 'offline' ? 'text-white' : 'text-gray-400'}`} />
+                          <Calendar className={`w-5 h-5 ${locationType === 'undecided' ? 'text-white' : 'text-gray-400'}`} />
                         </div>
                         <h4
                           className="text-[var(--section-text-primary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '0.875rem' }}
                         >
-                          오프라인 상담
+                          장소미정
                         </h4>
                         <p
                           className="text-[var(--section-text-secondary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.8125rem' }}
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.6875rem' }}
                         >
-                          전문가 사무실 또는<br />지정된 장소에서 대면 상담
+                          지역만 정해지고<br />상세 장소는 미정
                         </p>
                       </div>
                     </motion.button>
                   </div>
 
-                  {/* Location Input for Offline */}
-                  {locationType === 'offline' && (
+                  {/* Location Input for Confirmed Address */}
+                  {locationType === 'confirmed' && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -720,6 +1012,79 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           value={addressDetail}
                           onChange={(e) => setAddressDetail(e.target.value)}
                           placeholder="예: 3층 회의실"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* City/District/Region Selection for Undecided */}
+                  {locationType === 'undecided' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      {/* City (시/도) */}
+                      <div>
+                        <label
+                          className="block text-[var(--section-text-primary)] mb-2"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          시/도 <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={selectedCity}
+                          onChange={(e) => {
+                            setSelectedCity(e.target.value);
+                            setSelectedDistrict('');
+                          }}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
+                        >
+                          <option value="">시/도를 선택해주세요</option>
+                          {Object.keys(cityDistrictData).map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* District (시/군/구) */}
+                      <div>
+                        <label
+                          className="block text-[var(--section-text-primary)] mb-2"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          시/군/구 <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={selectedDistrict}
+                          onChange={(e) => setSelectedDistrict(e.target.value)}
+                          disabled={!selectedCity}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
+                        >
+                          <option value="">시/군/구를 선택해주세요</option>
+                          {selectedCity && cityDistrictData[selectedCity]?.map((district) => (
+                            <option key={district} value={district}>{district}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Additional Region Info (Optional) */}
+                      <div>
+                        <label
+                          className="block text-[var(--section-text-primary)] mb-2"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          추가 지역 정보 (선택)
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedRegion}
+                          onChange={(e) => setSelectedRegion(e.target.value)}
+                          placeholder="예: 강남역 인근, 판교 테크노밸리 등"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
                         />
@@ -820,6 +1185,24 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
                         />
                       </div>
+
+                      {/* Message */}
+                      <div>
+                        <label
+                          className="block text-[var(--section-text-primary)] mb-2"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          기타 문의 내용
+                        </label>
+                        <textarea
+                          value={formData.message}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          rows={4}
+                          placeholder="추가로 문의하실 내용이 있으시면 입력해주세요"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors resize-none bg-white"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -891,59 +1274,6 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           required
                           placeholder="example@email.com"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ➕ Section 3: 추가 정보 */}
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                    <div className="flex items-center gap-2 mb-5">
-                      <div className="w-8 h-8 rounded-lg bg-[var(--section-brand-primary)] flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-white" />
-                      </div>
-                      <h4
-                        className="text-[var(--section-text-primary)] m-0"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}
-                      >
-                        추가 정보
-                      </h4>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Fee */}
-                      <div>
-                        <label
-                          className="block text-[var(--section-text-primary)] mb-2"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
-                        >
-                          강연료 (가세 별도 / 세금계산서 발행)
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.fee}
-                          onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                          placeholder="강연료를 입력해주세요 (예: 1,000,000원)"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
-                        />
-                      </div>
-
-                      {/* Message */}
-                      <div>
-                        <label
-                          className="block text-[var(--section-text-primary)] mb-2"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
-                        >
-                          기타 문의 내용
-                        </label>
-                        <textarea
-                          value={formData.message}
-                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                          rows={4}
-                          placeholder="추가로 문의하실 내용이 있으시면 입력해주세요"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors resize-none bg-white"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
                         />
                       </div>
@@ -1022,7 +1352,10 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="text-[var(--section-text-primary)]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
                         >
-                          {locationType === 'online' ? '온라인 (Zoom/Google Meet)' : location}
+                          {locationType === 'confirmed' 
+                            ? location 
+                            : `장소 미정${selectedCity ? ` (선호 지역: ${selectedCity}${selectedDistrict ? ' ' + selectedDistrict : ''})` : ''}`
+                          }
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -1030,31 +1363,113 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="text-[var(--section-text-secondary)]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                         >
-                          참여 인원:
+                          요청사:
                         </span>
                         <span
                           className="text-[var(--section-text-primary)]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
                         >
-                          {formData.audience}
+                          {formData.agency}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span
+                          className="text-[var(--section-text-secondary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                        >
+                          주최사:
+                        </span>
+                        <span
+                          className="text-[var(--section-text-primary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                        >
+                          {formData.organizer}
                         </span>
                       </div>
                     </div>
 
-                    {/* Purpose */}
-                    <div className="pt-3 border-t border-gray-200">
-                      <p
-                        className="text-[var(--section-text-secondary)] text-[12px] mb-2"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                      >
-                        상담 목적:
-                      </p>
-                      <p
-                        className="text-[var(--section-text-primary)] text-[13px] leading-relaxed"
-                        style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
-                      >
-                        {formData.topic}
-                      </p>
+                    {/* Lecture Details */}
+                    {(formData.topic || formData.audience) && (
+                      <div className="pt-3 border-t border-gray-200 space-y-3 text-[13px]">
+                        {formData.topic && (
+                          <div className="flex justify-between">
+                            <span
+                              className="text-[var(--section-text-secondary)]"
+                              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                            >
+                              강연 주제:
+                            </span>
+                            <span
+                              className="text-[var(--section-text-primary)]"
+                              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                            >
+                              {formData.topic}
+                            </span>
+                          </div>
+                        )}
+                        {formData.audience && (
+                          <div className="flex justify-between">
+                            <span
+                              className="text-[var(--section-text-secondary)]"
+                              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                            >
+                              강연 대상:
+                            </span>
+                            <span
+                              className="text-[var(--section-text-primary)]"
+                              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                            >
+                              {formData.audience}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Contact Info */}
+                    <div className="pt-3 border-t border-gray-200 space-y-3 text-[13px]">
+                      <div className="flex justify-between">
+                        <span
+                          className="text-[var(--section-text-secondary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                        >
+                          담당자명:
+                        </span>
+                        <span
+                          className="text-[var(--section-text-primary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                        >
+                          {formData.contactName}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span
+                          className="text-[var(--section-text-secondary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                        >
+                          전화번호:
+                        </span>
+                        <span
+                          className="text-[var(--section-text-primary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                        >
+                          {formData.contactPhone}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span
+                          className="text-[var(--section-text-secondary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
+                        >
+                          이메일:
+                        </span>
+                        <span
+                          className="text-[var(--section-text-primary)]"
+                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                        >
+                          {formData.contactEmail}
+                        </span>
+                      </div>
                     </div>
 
                     {formData.message && (
@@ -1063,7 +1478,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="text-[var(--section-text-secondary)] text-[12px] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                         >
-                          특별 요청사항:
+                          기타 문의 내용:
                         </p>
                         <p
                           className="text-[var(--section-text-primary)] text-[13px] leading-relaxed"
@@ -1078,9 +1493,11 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
               )}
             </motion.div>
           </AnimatePresence>
+        </div>
 
-          {/* Navigation Buttons */}
-          <div ref={navigationButtonsRef} className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+        {/* Footer */}
+        <div className="px-8 py-6 border-t border-gray-200">
+          <div ref={navigationButtonsRef} className="flex items-center justify-between">
             <Button
               onClick={handleBack}
               disabled={currentStepIndex === 0}

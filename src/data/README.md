@@ -1,12 +1,12 @@
-# 📊 중앙화된 Mock 데이터 시스템
+# 📊 Mock 데이터 시스템
 
 ## 🎯 개요
 
-**단일 소스 원칙 (Single Source of Truth)**을 적용하여 모든 Admin 페이지가 동일한 데이터를 사용합니다.
+**단일 소스 원칙 (Single Source of Truth)**을 적용하여 개발 중에는 Mock 데이터를 사용하고, 프로덕션에서는 백엔드 API로 자동 전환됩니다.
 
-`/data/mockData.ts`의 `reservations` 배열이 유일한 데이터 소스이며, 모든 통계는 이를 기반으로 **실시간 계산**됩니다.
+`/data/mockData.ts`의 데이터가 개발용 데이터 소스이며, 환경 변수로 Real API와 전환 가능합니다.
 
-**최종 업데이트**: 2024-12-24 (데이터 정합성 개선)
+**최종 업데이트**: 2026-01-04
 
 ---
 
@@ -14,80 +14,65 @@
 
 ```
 /data/mockData.ts
-├─ reservations[]      # 예약 데이터 (12건) ⭐ 단일 소스
-├─ settlements[]       # 정산 데이터 (6건)
-├─ inquiries[]         # 기타문의 (8건)
+├─ reservations[]      # 예약 데이터 (Mock)
+├─ settlements[]       # 정산 데이터 (Mock)
+├─ inquiries[]         # 기타문의 (Mock)
 │
-├─ 📊 통계 계산 함수 (9개)
-│  ├─ getTotalBookings()                    # 총 예약 건수
-│  ├─ getBookingsByStatus()                 # 상태별 통계
-│  ├─ getBookingStatusData()                # 파이차트 데이터
-│  ├─ getExpertPerformance()                # 전문가별 성과
-│  ├─ getMonthlyStatsFromReservations()     # 월별 통계
-│  ├─ getRegionalDistribution()             # 지역별 분포
-│  ├─ getRecentBookings()                   # 최근 예약
-│  ├─ getTopExperts()                       # 상위 전문가
-│  └─ getTotalRevenue()                     # 총 매출
+├─ 📊 통계 계산 함수
+│  ├─ getTotalBookings()
+│  ├─ getBookingsByStatus()
+│  ├─ getBookingStatusData()
+│  ├─ getExpertPerformance()
+│  ├─ getMonthlyStatsFromReservations()
+│  ├─ getRegionalDistribution()
+│  ├─ getRecentBookings()
+│  ├─ getTopExperts()
+│  └─ getTotalRevenue()
 │
-└─ 🔧 헬퍼 함수 (5개)
-   ├─ getCompletedReservations()            # 완료된 예약만
-   ├─ getSettlementByReservationId()        # 예약별 정산
-   ├─ getReservationCountByStatus()         # 상태별 개수
-   ├─ getTotalSettlementAmount()            # 총 정산액
-   └─ getInquiryCountByStatus()             # 문의 상태별 개수
+└─ 🔧 헬퍼 함수
+   ├─ getCompletedReservations()
+   ├─ getSettlementByReservationId()
+   ├─ getReservationCountByStatus()
+   ├─ getTotalSettlementAmount()
+   └─ getInquiryCountByStatus()
 ```
 
 ---
 
-## ✅ 연동된 컴포넌트
+## 🔄 Mock → Real API 전환
 
-### 1️⃣ **AdminPage.tsx** (예약 신청 내역 관리)
-```typescript
-import { reservations } from '../data/mockData';
-```
-- **데이터**: 원본 12건
-- **기능**: 목록 표시, 필터링, 상태 변경
+### **환경 변수 설정**
 
-### 2️⃣ **DashboardContent.tsx** (대시보드)
-```typescript
-import { 
-  getTotalBookings,
-  getBookingsByStatus,
-  getBookingStatusData,
-  getExpertPerformance,
-  getMonthlyStatsFromReservations,
-  getRecentBookings,
-  getTopExperts,
-  getRegionalDistribution
-} from '../data/mockData';
-```
-- **데이터**: reservations 기반 계산 (12건)
-- **기능**: 통계 차트, KPI 카드, 월별 트렌드
+```env
+# 개발 환경 (Mock 사용)
+VITE_USE_MOCK=true
 
-### 3️⃣ **MapHeatmapContent.tsx** (지역별 예약 현황)
-```typescript
-import { reservations, getRegionalDistribution } from '../data/mockData';
+# 프로덕션 환경 (Real API)
+VITE_USE_MOCK=false
+VITE_API_URL=https://api.yourdomain.com/api
 ```
-- **데이터**: reservations 기반 실시간 집계
-- **기능**: 인터랙티브 지도, 지역별 통계
 
-### 4️⃣ **SettlementContent.tsx** (정산 관리)
-```typescript
-import { 
-  getCompletedReservations,
-  getSettlementByReservationId,
-  settlements
-} from '../data/mockData';
-```
-- **데이터**: 완료된 예약 (6건) + 정산 정보
-- **기능**: 정산 등록, 자동 계산, 상태 관리
+### **자동 전환 메커니즘**
 
-### 5️⃣ **InquiryContent.tsx** (기타문의 관리)
 ```typescript
-import { inquiries, getInquiryCountByStatus } from '../data/mockData';
+// api/reservations.ts
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+
+export async function fetchReservations(params) {
+  if (USE_MOCK) {
+    // 개발: Mock 데이터 반환
+    return mockReservations;
+  }
+  
+  // 프로덕션: 실제 API 호출
+  return apiClient.get('/reservations', params);
+}
 ```
-- **데이터**: inquiries (8건)
-- **기능**: 문의 목록, 답변 관리
+
+**장점:**
+- ✅ 코드 변경 없이 전환
+- ✅ 백엔드 없이 개발 가능
+- ✅ 환경별 설정 분리
 
 ---
 
@@ -566,6 +551,6 @@ FROM reservations;
 
 ---
 
-**마지막 업데이트**: 2024-12-24  
+**마지막 업데이트**: 2026-01-04  
 **버전**: 2.0 (데이터 정합성 개선 완료)  
 **관리자**: SAPIENS ISLAND 프론트엔드 팀

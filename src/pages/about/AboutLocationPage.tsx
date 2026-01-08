@@ -3,20 +3,22 @@ import SectionContainer from "../../components/SectionContainer";
 import Footer from "../../components/Footer";
 import { Navigation, Car, Train, Bus, Phone, Mail, MapPin, Clock } from "lucide-react";
 
-export default function ContactLocationPage() {
+export default function AboutLocationPage() {
   const tabs = [
-    { id: "inquiry", label: "기타문의", path: "/inquiry" },
+    { id: "vision", label: "비전", path: "/vision" },
+    { id: "competency", label: "역량", path: "/competency" },
+    { id: "history", label: "연혁", path: "/history" },
     { id: "location", label: "연락처 / 오시는길", path: "/location" }
   ];
 
   return (
     <PageHeroLayout
-      title="기타문의"
-      description="사피엔스아일랜드와 함께 성장할 기회를 만들어보세요.<br class='hidden md:block' />언제든지 문의 주시면 신속하게 답변드리겠습니다."
-      backgroundImage="https://www.openaccessgovernment.org/wp-content/uploads/2024/05/iStock-2092734289-e1715601027881.jpg"
-      backgroundAlt="Communication and contact"
+      title="회사소개"
+      description="지식 전문가의 인사이트와 초개인화 IT 기술을 결합해,<br class='hidden md:block' />타인과 자신을 이해하고 삶의 복잡한 문제를 해소하는 솔루션을 제공합니다."
+      backgroundImage="https://images.presentationgo.com/2025/09/abstract-digital-data-wave.jpg"
+      backgroundAlt="Team collaboration and network"
       tabs={tabs}
-      basePath="/contact"
+      basePath="/about"
     >
       {/* Map Section */}
       <SectionContainer backgroundColor="light" reducedTopPadding>

@@ -14,8 +14,8 @@ interface PageHeroLayoutProps {
   description: string;
   backgroundImage: string;
   backgroundAlt: string;
-  tabs: Tab[];
-  basePath: string;
+  tabs?: Tab[];
+  basePath?: string;
   children: ReactNode;
 }
 

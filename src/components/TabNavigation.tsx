@@ -7,13 +7,18 @@ interface Tab {
 }
 
 interface TabNavigationProps {
-  tabs: Tab[];
-  basePath: string;
+  tabs?: Tab[];
+  basePath?: string;
 }
 
-export default function TabNavigation({ tabs, basePath }: TabNavigationProps) {
+export default function TabNavigation({ tabs = [], basePath = '' }: TabNavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // tabs가 없거나 비어있으면 렌더링하지 않음
+  if (!tabs || tabs.length === 0) {
+    return null;
+  }
   
   // 현재 경로에서 활성 탭 결정
   const getActiveTab = () => {
@@ -23,7 +28,7 @@ export default function TabNavigation({ tabs, basePath }: TabNavigationProps) {
   };
   
   const currentTab = getActiveTab();
-
+  
   const handleTabClick = (e: React.MouseEvent, tabPath: string) => {
     e.preventDefault();
     // 하위메뉴 탭 클릭 시 콘텐츠로 스크롤하도록 state 전달

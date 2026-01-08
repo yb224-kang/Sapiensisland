@@ -8,7 +8,8 @@ export default function AboutCompetencyPage() {
   const tabs = [
     { id: "vision", label: "비전", path: "/vision" },
     { id: "competency", label: "역량", path: "/competency" },
-    { id: "history", label: "연혁", path: "/history" }
+    { id: "history", label: "연혁", path: "/history" },
+    { id: "location", label: "연락처 / 오시는길", path: "/location" }
   ];
 
   const competencies = [

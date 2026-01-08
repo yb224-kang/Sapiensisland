@@ -20,6 +20,7 @@ export interface Reservation {
   reservationTime: string;
   expert: string;
   expertField: string;
+  type: '강연' | '방송' | '촬영' | '자문' | '출연' | '인터뷰' | '상담' | '추천사';
   locationType: 'online' | 'offline';
   location: string;
   region: string;
@@ -112,9 +113,10 @@ export const reservations: Reservation[] = [
     reservationTime: "14:00",
     expert: "김경일",
     expertField: "심리학",
+    type: '강연',
     locationType: "offline",
     location: "삼성전자 본사 대강당",
-    region: "경기",
+    region: "경기도",
     agency: "삼성전자",
     client: "삼성전자 HR팀",
     topic: "조직 심리와 팀워크",
@@ -134,9 +136,10 @@ export const reservations: Reservation[] = [
     reservationTime: "10:00",
     expert: "유영만",
     expertField: "교육학",
+    type: '자문',
     locationType: "online",
     location: "Zoom 온라인",
-    region: "서울",
+    region: "서울특별시",
     agency: "현대자동차",
     client: "현대자동차 인재개발원",
     topic: "미래 인재 육성 전략",
@@ -155,9 +158,10 @@ export const reservations: Reservation[] = [
     reservationTime: "15:00",
     expert: "정재한",
     expertField: "경영전략",
+    type: '강연',
     locationType: "offline",
     location: "LG트윈타워 컨퍼런스홀",
-    region: "서울",
+    region: "서울특별시",
     agency: "LG전자",
     client: "LG전자 경영전략팀",
     topic: "글로벌 경영 전략과 혁신",
@@ -176,9 +180,10 @@ export const reservations: Reservation[] = [
     reservationTime: "09:00",
     expert: "김태훈",
     expertField: "심리학",
+    type: '강연',
     locationType: "offline",
     location: "SK하이닉스 연수원",
-    region: "경기",
+    region: "경기도",
     agency: "SK하이닉스",
     client: "SK하이닉스 교육팀",
     topic: "조직 내 소통과 갈등 관리",
@@ -196,9 +201,10 @@ export const reservations: Reservation[] = [
     reservationTime: "13:00",
     expert: "김미경",
     expertField: "교육",
+    type: '강연',
     locationType: "online",
     location: "MS Teams",
-    region: "서울",
+    region: "서울특별시",
     agency: "네이버",
     client: "네이버 인재육성팀",
     topic: "리더십과 동기부여",
@@ -218,9 +224,10 @@ export const reservations: Reservation[] = [
     reservationTime: "16:00",
     expert: "최재붕",
     expertField: "미디어",
+    type: '방송',
     locationType: "offline",
     location: "카카오 판교오피스",
-    region: "경기",
+    region: "경기도",
     agency: "카카오",
     client: "카카오 마케팅팀",
     topic: "디지털 전환과 미디어 트렌드",
@@ -240,9 +247,10 @@ export const reservations: Reservation[] = [
     reservationTime: "11:00",
     expert: "김경일",
     expertField: "심리학",
+    type: '강연',
     locationType: "offline",
     location: "LG전자 연구소",
-    region: "서울",
+    region: "서울특별시",
     agency: "LG전자",
     client: "LG전자 R&D센터",
     topic: "창의성과 혁신적 사고",
@@ -262,9 +270,10 @@ export const reservations: Reservation[] = [
     reservationTime: "14:30",
     expert: "유영만",
     expertField: "교육학",
+    type: '강연',
     locationType: "online",
     location: "Zoom 온라인",
-    region: "서울",
+    region: "서울특별시",
     agency: "삼성전자",
     client: "삼성전자 교육센터",
     topic: "학습 조직 구축 전략",
@@ -284,9 +293,10 @@ export const reservations: Reservation[] = [
     reservationTime: "10:30",
     expert: "정재한",
     expertField: "경영전략",
+    type: '강연',
     locationType: "offline",
     location: "포스코센터",
-    region: "서울",
+    region: "서울특별시",
     agency: "포스코",
     client: "포스코 기획팀",
     topic: "지속 가능한 경영 전략",
@@ -300,57 +310,14 @@ export const reservations: Reservation[] = [
   },
   {
     id: 10,
-    reservationDate: "2024-11-15",
-    reservationTime: "15:30",
-    expert: "김태훈",
-    expertField: "심리학",
-    locationType: "offline",
-    location: "CJ ENM 센터",
-    region: "서울",
-    agency: "CJ ENM",
-    client: "CJ ENM 인사팀",
-    topic: "조직 문화와 직원 만족도",
-    audience: "인사담당자",
-    contactName: "한차장",
-    contactPhone: "010-0123-4567",
-    contactEmail: "han@cj.net",
-    fee: 2100000,
-    status: "completed",
-    createdAt: "2024-10-15 11:10",
-    confirmedAt: "2024-10-16 14:25",
-    completedAt: "2024-11-15 17:30"
-  },
-  {
-    id: 11,
-    reservationDate: "2024-12-28",
-    reservationTime: "09:30",
-    expert: "김미경",
-    expertField: "교육",
-    locationType: "online",
-    location: "Google Meet",
-    region: "서울",
-    agency: "쿠팡",
-    client: "쿠팡 교육개발팀",
-    topic: "셀프 리더십과 자기계발",
-    audience: "전 직원",
-    contactName: "오과장",
-    contactPhone: "010-1111-2222",
-    contactEmail: "oh@coupang.com",
-    fee: 1900000,
-    status: "cancelled",
-    createdAt: "2024-12-05 10:40",
-    cancelledAt: "2024-12-18 09:15",
-    cancelReason: "사내 일정 변경으로 인한 취소"
-  },
-  {
-    id: 12,
     reservationDate: "2024-11-10",
-    reservationTime: "13:30",
+    reservationTime: "14:00",
     expert: "최재붕",
     expertField: "미디어",
+    type: '강연',
     locationType: "offline",
     location: "배달의민족 본사",
-    region: "서울",
+    region: "서울특별시",
     agency: "우아한형제들",
     client: "우아한형제들 마케팅팀",
     topic: "모바일 시대의 마케팅 전략",
@@ -363,6 +330,377 @@ export const reservations: Reservation[] = [
     createdAt: "2024-10-10 12:25",
     confirmedAt: "2024-10-11 15:40",
     completedAt: "2024-11-10 15:30"
+  },
+  // 부산광역시
+  {
+    id: 11,
+    reservationDate: "2024-12-05",
+    reservationTime: "14:00",
+    expert: "김경일",
+    expertField: "심리학",
+    type: '강연',
+    locationType: "offline",
+    location: "부산 벡스코",
+    region: "부산광역시",
+    agency: "부산시청",
+    client: "부산시청 교육과",
+    topic: "공직자 리더십과 조직문화",
+    audience: "공무원",
+    contactName: "박과장",
+    contactPhone: "051-1234-5678",
+    contactEmail: "park@busan.go.kr",
+    fee: 1800000,
+    status: "completed",
+    createdAt: "2024-11-01 09:30",
+    confirmedAt: "2024-11-02 14:20",
+    completedAt: "2024-12-05 16:00"
+  },
+  // 대구광역시
+  {
+    id: 12,
+    reservationDate: "2024-12-08",
+    reservationTime: "10:00",
+    expert: "유영만",
+    expertField: "교육학",
+    type: '자문',
+    locationType: "offline",
+    location: "대구 엑스코",
+    region: "대구광역시",
+    agency: "대구교육청",
+    client: "대구교육청 인재육성팀",
+    topic: "교육 혁신과 미래 인재",
+    audience: "교사",
+    contactName: "김선생",
+    contactPhone: "053-2345-6789",
+    contactEmail: "kim@dge.go.kr",
+    fee: 1500000,
+    status: "completed",
+    createdAt: "2024-11-10 11:00",
+    confirmedAt: "2024-11-11 15:30",
+    completedAt: "2024-12-08 12:00"
+  },
+  // 인천광역시
+  {
+    id: 13,
+    reservationDate: "2024-12-12",
+    reservationTime: "15:00",
+    expert: "정재한",
+    expertField: "경영전략",
+    type: '강연',
+    locationType: "offline",
+    location: "인천 송도 컨벤시아",
+    region: "인천광역시",
+    agency: "인천항만공사",
+    client: "인천항만공사 전략기획팀",
+    topic: "글로벌 물류 전략",
+    audience: "임직원",
+    contactName: "이부장",
+    contactPhone: "032-3456-7890",
+    contactEmail: "lee@icpa.or.kr",
+    fee: 2000000,
+    status: "confirmed",
+    createdAt: "2024-11-15 13:45",
+    confirmedAt: "2024-11-16 10:20"
+  },
+  // 광주광역시
+  {
+    id: 14,
+    reservationDate: "2024-12-16",
+    reservationTime: "13:00",
+    expert: "김미경",
+    expertField: "교육",
+    type: '강연',
+    locationType: "offline",
+    location: "광주 김대중컨벤션센터",
+    region: "광주광역시",
+    agency: "광주문화재단",
+    client: "광주문화재단 교육팀",
+    topic: "자기계발과 동기부여",
+    audience: "시민",
+    contactName: "최팀장",
+    contactPhone: "062-4567-8901",
+    contactEmail: "choi@gjcf.or.kr",
+    fee: 1300000,
+    status: "confirmed",
+    createdAt: "2024-11-20 09:15",
+    confirmedAt: "2024-11-21 11:30"
+  },
+  // 대전광역시
+  {
+    id: 15,
+    reservationDate: "2024-12-19",
+    reservationTime: "11:00",
+    expert: "김태훈",
+    expertField: "심리학",
+    type: '자문',
+    locationType: "offline",
+    location: "대전 대덕연구단지",
+    region: "대전광역시",
+    agency: "KAIST",
+    client: "KAIST 학생지원팀",
+    topic: "학생 상담과 심리 지원",
+    audience: "교직원",
+    contactName: "박교수",
+    contactPhone: "042-5678-9012",
+    contactEmail: "park@kaist.ac.kr",
+    fee: 1400000,
+    status: "pending",
+    createdAt: "2024-12-01 14:20"
+  },
+  // 울산광역시
+  {
+    id: 16,
+    reservationDate: "2024-12-23",
+    reservationTime: "14:00",
+    expert: "송길영",
+    expertField: "데이터분석",
+    type: '강연',
+    locationType: "offline",
+    location: "울산 현대중공업",
+    region: "울산광역시",
+    agency: "현대중공업",
+    client: "현대중공업 기획팀",
+    topic: "빅데이터와 산업 혁신",
+    audience: "임직원",
+    contactName: "강차장",
+    contactPhone: "052-6789-0123",
+    contactEmail: "kang@hhi.co.kr",
+    fee: 1900000,
+    status: "confirmed",
+    createdAt: "2024-12-05 10:30",
+    confirmedAt: "2024-12-06 15:40"
+  },
+  // 세종특별자치시
+  {
+    id: 17,
+    reservationDate: "2024-11-28",
+    reservationTime: "10:00",
+    expert: "김난도",
+    expertField: "소비트렌드",
+    type: '강연',
+    locationType: "offline",
+    location: "세종시청 대강당",
+    region: "세종특별자치시",
+    agency: "세종시청",
+    client: "세종시청 정책기획단",
+    topic: "2025 트렌드와 정책 방향",
+    audience: "공무원",
+    contactName: "윤과장",
+    contactPhone: "044-1234-5678",
+    contactEmail: "yun@sejong.go.kr",
+    fee: 1600000,
+    status: "completed",
+    createdAt: "2024-10-28 11:00",
+    confirmedAt: "2024-10-29 13:20",
+    completedAt: "2024-11-28 12:00"
+  },
+  // 경기도
+  {
+    id: 18,
+    reservationDate: "2024-12-10",
+    reservationTime: "15:00",
+    expert: "장영준",
+    expertField: "경제",
+    type: '강연',
+    locationType: "offline",
+    location: "수원 경기도청",
+    region: "경기도",
+    agency: "경기도청",
+    client: "경기도청 경제정책과",
+    topic: "지역경제 활성화 전략",
+    audience: "공무원",
+    contactName: "정부장",
+    contactPhone: "031-2345-6789",
+    contactEmail: "jung@gg.go.kr",
+    fee: 1700000,
+    status: "confirmed",
+    createdAt: "2024-11-25 14:30",
+    confirmedAt: "2024-11-26 16:50"
+  },
+  // 강원특별자치도
+  {
+    id: 19,
+    reservationDate: "2024-12-14",
+    reservationTime: "13:00",
+    expert: "최재천",
+    expertField: "생물학",
+    type: '강연',
+    locationType: "offline",
+    location: "춘천 강원도청",
+    region: "강원특별자치도",
+    agency: "강원도청",
+    client: "강원도청 환경과",
+    topic: "생태환경 보전과 지속가능성",
+    audience: "공무원",
+    contactName: "한과장",
+    contactPhone: "033-3456-7890",
+    contactEmail: "han@gwd.go.kr",
+    fee: 1500000,
+    status: "confirmed",
+    createdAt: "2024-11-28 09:40",
+    confirmedAt: "2024-11-29 11:20"
+  },
+  // 충청북도
+  {
+    id: 20,
+    reservationDate: "2024-12-17",
+    reservationTime: "14:00",
+    expert: "김상욱",
+    expertField: "물리학",
+    type: '강연',
+    locationType: "offline",
+    location: "청주 충북도청",
+    region: "충청북도",
+    agency: "충청북도청",
+    client: "충청북도청 교육체육국",
+    topic: "과학으로 보는 세상",
+    audience: "교사",
+    contactName: "신선생",
+    contactPhone: "043-4567-8901",
+    contactEmail: "shin@cb21.go.kr",
+    fee: 1200000,
+    status: "pending",
+    createdAt: "2024-12-03 15:10"
+  },
+  // 충청남도
+  {
+    id: 21,
+    reservationDate: "2024-12-21",
+    reservationTime: "10:00",
+    expert: "문재인",
+    expertField: "정치",
+    type: '강연',
+    locationType: "offline",
+    location: "홍성 충남도청",
+    region: "충청남도",
+    agency: "충청남도청",
+    client: "충청남도청 기획조정실",
+    topic: "지방자치와 민주주의",
+    audience: "공무원",
+    contactName: "오국장",
+    contactPhone: "041-5678-9012",
+    contactEmail: "oh@chungnam.go.kr",
+    fee: 2500000,
+    status: "confirmed",
+    createdAt: "2024-12-07 10:20",
+    confirmedAt: "2024-12-08 14:30"
+  },
+  // 전북특별자치도
+  {
+    id: 22,
+    reservationDate: "2024-12-11",
+    reservationTime: "15:00",
+    expert: "유현준",
+    expertField: "건축",
+    type: '강연',
+    locationType: "offline",
+    location: "전주 전북도청",
+    region: "전북특별자치도",
+    agency: "전북도청",
+    client: "전북도청 도시계획과",
+    topic: "도시재생과 공간 디자인",
+    audience: "공무원",
+    contactName: "류과장",
+    contactPhone: "063-6789-0123",
+    contactEmail: "ryu@jeonbuk.go.kr",
+    fee: 1800000,
+    status: "completed",
+    createdAt: "2024-11-05 13:30",
+    confirmedAt: "2024-11-06 15:20",
+    completedAt: "2024-12-11 17:00"
+  },
+  // 전라남도
+  {
+    id: 23,
+    reservationDate: "2024-12-25",
+    reservationTime: "11:00",
+    expert: "홍경한",
+    expertField: "미래학",
+    type: '자문',
+    locationType: "offline",
+    location: "무안 전남도청",
+    region: "전라남도",
+    agency: "전남도청",
+    client: "전남도청 미래전략과",
+    topic: "지역 미래 전략 수립",
+    audience: "정책팀",
+    contactName: "고팀장",
+    contactPhone: "061-7890-1234",
+    contactEmail: "go@jeonnam.go.kr",
+    fee: 1600000,
+    status: "confirmed",
+    createdAt: "2024-12-10 11:50",
+    confirmedAt: "2024-12-11 13:40"
+  },
+  // 경상북도
+  {
+    id: 24,
+    reservationDate: "2024-12-13",
+    reservationTime: "14:00",
+    expert: "설민석",
+    expertField: "역사",
+    type: '강연',
+    locationType: "offline",
+    location: "안동 경북도청",
+    region: "경상북도",
+    agency: "경북도청",
+    client: "경북도청 문화관광과",
+    topic: "한국사와 문화유산",
+    audience: "시민",
+    contactName: "백과장",
+    contactPhone: "054-8901-2345",
+    contactEmail: "baek@gb.go.kr",
+    fee: 1400000,
+    status: "completed",
+    createdAt: "2024-11-18 10:20",
+    confirmedAt: "2024-11-19 12:30",
+    completedAt: "2024-12-13 16:00"
+  },
+  // 경상남도
+  {
+    id: 25,
+    reservationDate: "2024-12-27",
+    reservationTime: "13:00",
+    expert: "이어령",
+    expertField: "문학",
+    type: '강연',
+    locationType: "offline",
+    location: "창원 경남도청",
+    region: "경상남도",
+    agency: "경남도청",
+    client: "경남도청 문화예술과",
+    topic: "문화창조와 지역발전",
+    audience: "문화예술인",
+    contactName: "조국장",
+    contactPhone: "055-9012-3456",
+    contactEmail: "jo@gyeongnam.go.kr",
+    fee: 2000000,
+    status: "pending",
+    createdAt: "2024-12-12 14:40"
+  },
+  // 제주특별자치도
+  {
+    id: 26,
+    reservationDate: "2024-12-09",
+    reservationTime: "10:00",
+    expert: "안철수",
+    expertField: "IT",
+    type: '강연',
+    locationType: "offline",
+    location: "제주 ICC",
+    region: "제주특별자치도",
+    agency: "제주도청",
+    client: "제주도청 디지털정책과",
+    topic: "디지털 혁신과 스마트시티",
+    audience: "공무원",
+    contactName: "현과장",
+    contactPhone: "064-0123-4567",
+    contactEmail: "hyun@jeju.go.kr",
+    fee: 2200000,
+    status: "completed",
+    createdAt: "2024-11-12 09:30",
+    confirmedAt: "2024-11-13 11:40",
+    completedAt: "2024-12-09 12:00"
   }
 ];
 
@@ -790,7 +1128,7 @@ export const inquiries: Inquiry[] = [
   },
   {
     id: 6,
-    title: "전문가 프로필 업데이트 요청",
+    title: "전문가 프로필 업데이 요청",
     message: "등록된 전문가 프로필 정보 중 일부가 오래된 것 같습니다. 업데이트 부탁드립니다.",
     contactName: "강태영",
     contactPhone: "010-4444-5555",
@@ -1029,17 +1367,83 @@ export const getMonthlyStatsFromReservations = (): MonthlyStats[] => {
 export const getRecentBookings = (limit: number = 8) => {
   return [...reservations]
     .sort((a, b) => new Date(b.reservationDate).getTime() - new Date(a.reservationDate).getTime())
-    .slice(0, limit)
-    .map(r => ({
-      id: r.id,
-      date: r.reservationDate,
-      time: r.reservationTime,
-      expert: r.expert,
-      client: r.agency,
-      status: r.status,
-      amount: r.fee.toLocaleString(),
-      field: r.expertField
-    }));
+    .slice(0, limit);
+};
+
+/**
+ * 월별 신청건수 & 확정률 통계
+ */
+export const getMonthlyApplicationStats = (
+  year?: string,
+  startMonth?: number,
+  endMonth?: number,
+  status?: string
+) => {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthMap = new Map<string, { applied: number; confirmed: number }>();
+
+  // 1월부터 12월까지 초기화
+  months.forEach(month => {
+    monthMap.set(month, { applied: 0, confirmed: 0 });
+  });
+
+  // 예약 데이터를 월별로 집계
+  reservations.forEach(r => {
+    const date = new Date(r.reservationDate);
+    const reservationYear = date.getFullYear().toString();
+    const monthIndex = date.getMonth();
+    const monthName = months[monthIndex];
+    
+    // 연도 필터링
+    if (year && reservationYear !== year) {
+      return;
+    }
+    
+    // 상태 필터링
+    if (status && status !== 'all' && r.status !== status) {
+      return;
+    }
+
+    const monthData = monthMap.get(monthName)!;
+
+    // 전체 신청 건수 (cancelled 제외)
+    if (r.status !== 'cancelled') {
+      monthData.applied++;
+    }
+
+    // 확정 건수 (confirmed + completed)
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      monthData.confirmed++;
+    }
+  });
+
+  // 배열로 변환하고 확정률 계산
+  let result = months.map((month, index) => {
+    const data = monthMap.get(month)!;
+    const confirmRate = data.applied > 0 ? Math.round((data.confirmed / data.applied) * 100) : 0;
+
+    return {
+      month,
+      monthIndex: index + 1,
+      applied: data.applied,
+      confirmed: data.confirmed,
+      confirmRate
+    };
+  });
+
+  // 월 범위 필터링
+  if (startMonth !== undefined && endMonth !== undefined) {
+    result = result.filter(item => {
+      if (startMonth <= endMonth) {
+        return item.monthIndex >= startMonth && item.monthIndex <= endMonth;
+      } else {
+        // 연도를 넘어가는 경우 (예: 11월 ~ 2월)
+        return item.monthIndex >= startMonth || item.monthIndex <= endMonth;
+      }
+    });
+  }
+
+  return result;
 };
 
 /**
@@ -1070,11 +1474,33 @@ export const getRegionalDistribution = () => {
 
   const total = reservations.length;
   
+  // 지역별 고유 색상 매핑
+  const colorMap: Record<string, string> = {
+    '서울특별시': '#0ea5e9',      // 밝은 파란색
+    '경기도': '#1e3a8a',          // 진한 파란색
+    '부산광역시': '#14b8a6',      // 청록색
+    '강원특별자치도': '#f97316',  // 오렌지
+    '경상남도': '#22c55e',        // 녹색
+    '충청남도': '#a855f7',        // 자주색
+    '충청북도': '#ec4899',        // 분홍
+    '경상북도': '#6b7280',        // 회색
+    '대구광역시': '#166534',      // 진한 녹색
+    '인천광역시': '#7c3aed',      // 보라색
+    '대전광역시': '#f472b6',      // 연한 분홍
+    '전북특별자치도': '#eab308',  // 노란색
+    '전라남도': '#9ca3af',        // 연한 회색
+    '제주특별자치도': '#06b6d4',  // 청록
+    '울산광역시': '#bfdbfe',      // 연한 파란색
+    '광주광역시': '#fbbf24',      // 연한 노란색
+    '세종특별자치시': '#fb923c',  // 연한 오렌지
+  };
+  
   return Array.from(regionMap.entries())
     .map(([region, value]) => ({
       region,
       value,
-      percentage: total > 0 ? Math.round((value / total) * 1000) / 10 : 0
+      percentage: total > 0 ? Math.round((value / total) * 1000) / 10 : 0,
+      color: colorMap[region] || '#94a3b8' // 기본 회색
     }))
     .sort((a, b) => b.value - a.value);
 };
@@ -1092,4 +1518,36 @@ export const getTotalRevenue = (): number => {
 export const getAverageBookingAmount = (): number => {
   if (reservations.length === 0) return 0;
   return getTotalRevenue() / reservations.length;
+};
+
+/**
+ * 타입별 파이차트 데이터
+ */
+export const getBookingTypeData = () => {
+  const typeMap = new Map<string, number>();
+  
+  reservations.forEach(r => {
+    const count = typeMap.get(r.type) || 0;
+    typeMap.set(r.type, count + 1);
+  });
+  
+  // 색상 매핑
+  const colorMap: Record<string, string> = {
+    '강연': '#3b82f6',    // 파란색
+    '방송': '#8b5cf6',    // 보라색
+    '촬영': '#ec4899',    // 핑크색
+    '자문': '#10b981',    // 초록색
+    '출연': '#f59e0b',    // 노란색
+    '인터뷰': '#ef4444',  // 빨간색
+    '상담': '#06b6d4',    // 하늘색
+    '추천사': '#84cc16'   // 라임색
+  };
+  
+  return Array.from(typeMap.entries())
+    .map(([name, value]) => ({
+      name,
+      value,
+      color: colorMap[name] || '#6b7280'
+    }))
+    .sort((a, b) => b.value - a.value);
 };

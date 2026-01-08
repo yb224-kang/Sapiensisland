@@ -44,6 +44,8 @@ import {
   getRegionalDistribution,
   getTotalRevenue,
   getAverageBookingAmount,
+  getBookingTypeData,
+  getMonthlyApplicationStats,
   settlements
 } from '../data/mockData';
 
@@ -51,59 +53,33 @@ import {
 const allMonthlyBookingsData = getMonthlyStatsFromReservations();
 const expertPerformanceData = getExpertPerformance();
 const bookingStatusData = getBookingStatusData();
+const bookingTypeData = getBookingTypeData();
 const allRecentBookings = getRecentBookings();
 const topExperts = getTopExperts();
 const regionalData = getRegionalDistribution();
-
 // 정산 데이터 계산
 const totalSettlements = settlements.length;
 const completedSettlements = settlements.filter(s => s.settlementStatus === 'completed').length;
 const pendingSettlements = settlements.filter(s => s.settlementStatus === 'pending').length;
 
-// Treemap 데이터 생성
-const totalBookings = regionalData.reduce((sum, item) => sum + item.value, 0);
-const avgBookings = Math.round(totalBookings / regionalData.length);
-
+// Treemap 데이터 생성 - 지역별 고유 색상
 const treemapData = regionalData.map(item => {
-  const diffFromAvg = ((item.value - avgBookings) / avgBookings) * 100;
-  const roundedDiff = diffFromAvg.toFixed(1);
-  
-  // 주식 시장 색상 시스템
-  let color;
-  if (diffFromAvg > 50) {
-    color = '#16a34a'; // 강한 초록
-  } else if (diffFromAvg > 20) {
-    color = '#22c55e'; // 초록
-  } else if (diffFromAvg > 0) {
-    color = '#4ade80'; // 연한 초록
-  } else if (diffFromAvg > -20) {
-    color = '#f87171'; // 연한 빨강
-  } else if (diffFromAvg > -50) {
-    color = '#ef4444'; // 빨강
-  } else {
-    color = '#dc2626'; // 강한 빨강
-  }
-  
   return {
     name: item.region,
     value: item.value,
     percentage: item.percentage,
-    fill: color,
-    diff: roundedDiff,
-    diffFromAvg
+    fill: item.color // mockData에서 정의한 지역별 고유 색상 사용
   };
 });
 
-// Custom Treemap Content
+// Custom Treemap Content - 지역별 고유 색상
 const CustomTreemapContent = (props: any) => {
-  const { x, y, width, height, name, value, fill, diff } = props;
+  const { x, y, width, height, name, value, fill } = props;
   
   const canShowText = width > 60 && height > 40;
-  const canShowDiff = width > 80 && height > 60;
+  const canShowValue = width > 80 && height > 60;
   
   const textColor = '#ffffff';
-  const diffNum = parseFloat(diff);
-  const diffText = diffNum > 0 ? `+${diff}%` : `${diff}%`;
   
   return (
     <g>
@@ -121,7 +97,7 @@ const CustomTreemapContent = (props: any) => {
         <>
           <text
             x={x + width / 2}
-            y={y + height / 2 - (canShowDiff ? 6 : 0)}
+            y={y + height / 2 - (canShowValue ? 6 : 0)}
             textAnchor="middle"
             dominantBaseline="middle"
             fill={textColor}
@@ -138,14 +114,14 @@ const CustomTreemapContent = (props: any) => {
           >
             {name}
           </text>
-          {canShowDiff && (
+          {canShowValue && (
             <text
               x={x + width / 2}
               y={y + height / 2 + 14}
               textAnchor="middle"
               dominantBaseline="middle"
               fill={textColor}
-              fontSize={width > 120 ? '0.8125rem' : '0.75rem'}
+              fontSize={width > 120 ? '0.9375rem' : '0.8125rem'}
               fontWeight={600}
               fontFamily="Pretendard Variable, sans-serif"
               stroke="none"
@@ -157,7 +133,7 @@ const CustomTreemapContent = (props: any) => {
                 MozOsxFontSmoothing: 'grayscale'
               }}
             >
-              {diffText}
+              {value}건
             </text>
           )}
         </>
@@ -524,6 +500,20 @@ export default function DashboardContent() {
     { value: 'custom', label: '직접 선택' }
   ];
 
+  // 월별 신청/확정 차트 필터 state
+  const [applicationYear, setApplicationYear] = useState('2024');
+  const [applicationStartMonth, setApplicationStartMonth] = useState('1');
+  const [applicationEndMonth, setApplicationEndMonth] = useState('12');
+  const [applicationStatus, setApplicationStatus] = useState('all');
+
+  // 월별 신청/확정 차트 필터링된 데이터
+  const filteredApplicationData = getMonthlyApplicationStats(
+    applicationYear,
+    parseInt(applicationStartMonth),
+    parseInt(applicationEndMonth),
+    applicationStatus
+  );
+
   // Filter data based on selections
   const filteredMonthlyData = allMonthlyBookingsData.filter((_, index) => {
     if (dateRange === '1month') return index >= 11;
@@ -660,7 +650,7 @@ export default function DashboardContent() {
               exit={{ height: 0, opacity: 0 }}
               className="mt-4 pt-4 border-t border-gray-200"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Expert Filter */}
                 <div>
                   <label className="block text-xs text-gray-700 mb-2" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
@@ -709,6 +699,88 @@ export default function DashboardContent() {
                   </div>
                 </div>
 
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-xs text-gray-700 mb-2" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+                    예약상태
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={applicationStatus}
+                      onChange={(e) => setApplicationStatus(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-xs appearance-none pr-8 focus:outline-none focus:border-[#000050] transition-colors"
+                      style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                    >
+                      <option value="all">전체</option>
+                      <option value="pending">대기중</option>
+                      <option value="confirmed">확정</option>
+                      <option value="completed">완료</option>
+                      <option value="cancelled">취소</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Year Filter */}
+                <div>
+                  <label className="block text-xs text-gray-700 mb-2" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+                    연도
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={applicationYear}
+                      onChange={(e) => setApplicationYear(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-xs appearance-none pr-8 focus:outline-none focus:border-[#000050] transition-colors"
+                      style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                    >
+                      <option value="2023">2023년</option>
+                      <option value="2024">2024년</option>
+                      <option value="2025">2025년</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Start Month Filter */}
+                <div>
+                  <label className="block text-xs text-gray-700 mb-2" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+                    조회시작월
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={applicationStartMonth}
+                      onChange={(e) => setApplicationStartMonth(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-xs appearance-none pr-8 focus:outline-none focus:border-[#000050] transition-colors"
+                      style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                    >
+                      {[...Array(12)].map((_, i) => (
+                        <option key={i + 1} value={String(i + 1)}>{i + 1}월</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* End Month Filter */}
+                <div>
+                  <label className="block text-xs text-gray-700 mb-2" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+                    조회종료월
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={applicationEndMonth}
+                      onChange={(e) => setApplicationEndMonth(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-xs appearance-none pr-8 focus:outline-none focus:border-[#000050] transition-colors"
+                      style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                    >
+                      {[...Array(12)].map((_, i) => (
+                        <option key={i + 1} value={String(i + 1)}>{i + 1}월</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
                 {/* Custom Date Range */}
                 {customDateMode && (
                   <div className="md:col-span-2">
@@ -743,7 +815,7 @@ export default function DashboardContent() {
               </div>
 
               {/* Reset Button */}
-              {(selectedExpert !== 'all' || dateRange !== '12months') && (
+              {(selectedExpert !== 'all' || dateRange !== '12months' || applicationYear !== '2024' || applicationStartMonth !== '1' || applicationEndMonth !== '12' || applicationStatus !== 'all') && (
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={() => {
@@ -752,6 +824,10 @@ export default function DashboardContent() {
                       setCustomDateMode(false);
                       setStartDate('');
                       setEndDate('');
+                      setApplicationYear('2024');
+                      setApplicationStartMonth('1');
+                      setApplicationEndMonth('12');
+                      setApplicationStatus('all');
                     }}
                     className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs"
                     style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
@@ -810,6 +886,346 @@ export default function DashboardContent() {
       </div>
 
       {/* Charts Row 1 */}
+      <div className="grid grid-cols-1 gap-4">
+        {/* Combined Monthly Trend - Bookings & Revenue */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 
+                className="text-[#1e1e1e] space-golden-xs rhythm-snug"
+                style={{ 
+                  fontFamily: 'Pretendard Variable, sans-serif', 
+                  fontWeight: 700, 
+                  fontSize: '1.125rem',
+                  letterSpacing: 'var(--letter-spacing-snug)'
+                }}
+              >
+                월별 예약 트렌드 & 매출 추이
+              </h3>
+              <p 
+                className="text-gray-500 text-xs"
+                style={{ 
+                  fontFamily: 'Pretendard Variable, sans-serif', 
+                  fontWeight: 400,
+                  letterSpacing: 'var(--letter-spacing-wide)',
+                  lineHeight: 'var(--line-height-normal)'
+                }}
+              >
+                {dateRanges.find(d => d.value === dateRange)?.label} • 차트 클릭 시 상세보기
+              </p>
+            </div>
+          </div>
+          
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart 
+              data={filteredMonthlyData}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            >
+              <defs>
+                {/* 예약 건수 그라데이션 (블루) */}
+                <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05}/>
+                </linearGradient>
+                {/* 매출 그라데이션 (그레이) */}
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6b7280" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#6b7280" stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
+              
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+              
+              <XAxis 
+                dataKey="month" 
+                axisLine={false}
+                tickLine={false}
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#6b7280' }}
+                dy={10}
+              />
+              
+              {/* 왼쪽 Y축 - 예약 건수 */}
+              <YAxis 
+                yAxisId="left"
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 'auto']}
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#3b82f6' }}
+                label={{ 
+                  value: '예약 건수', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { 
+                    fontFamily: 'Pretendard Variable, sans-serif', 
+                    fontSize: '0.75rem', 
+                    fill: '#3b82f6',
+                    fontWeight: 600
+                  }
+                }}
+              />
+              
+              {/* 오른쪽 Y축 - 매출 (백만원) */}
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 'auto']}
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#6b7280' }}
+                label={{ 
+                  value: '매출 (백만원)', 
+                  angle: 90, 
+                  position: 'insideRight',
+                  style: { 
+                    fontFamily: 'Pretendard Variable, sans-serif', 
+                    fontSize: '0.75rem', 
+                    fill: '#6b7280',
+                    fontWeight: 600
+                  }
+                }}
+              />
+              
+              <Tooltip 
+                contentStyle={{ 
+                  fontFamily: 'Pretendard Variable, sans-serif',
+                  fontSize: '0.75rem',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                }}
+                formatter={(value: any, name: string) => {
+                  if (name === '매출') return [`₩${value}M`, name];
+                  return [`${value}건`, name];
+                }}
+              />
+              
+              {/* 매출 영역 차트 (회색, 뒤에 배치) */}
+              <Area
+                yAxisId="right"
+                type="monotone"
+                dataKey="revenue"
+                stroke="#6b7280"
+                strokeWidth={2}
+                fill="url(#colorRevenue)"
+                name="매출"
+                cursor="pointer"
+                onClick={(data) => handleChartClick(data, 'month')}
+              />
+              
+              {/* 예약 건수 영역 차트 (블루, 앞에 배치) */}
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="bookings"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                fill="url(#colorBookings)"
+                name="예약"
+                cursor="pointer"
+                onClick={(data) => handleChartClick(data, 'month')}
+              />
+              
+              {/* 예약 건수 데이터 포인트 */}
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="bookings"
+                stroke="#3b82f6"
+                strokeWidth={0}
+                dot={{ 
+                  fill: '#3b82f6', 
+                  r: 4, 
+                  strokeWidth: 2,
+                  stroke: '#ffffff'
+                }}
+                activeDot={{ r: 6 }}
+                name="예약"
+              />
+              
+              {/* 매출 데이터 포인트 */}
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="revenue"
+                stroke="#6b7280"
+                strokeWidth={0}
+                dot={{ 
+                  fill: '#6b7280', 
+                  r: 3, 
+                  strokeWidth: 2,
+                  stroke: '#ffffff'
+                }}
+                activeDot={{ r: 5 }}
+                name="매출"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+
+          {/* Legend */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-blue-500"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
+                예약 건수 (좌축)
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-gray-500"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
+                매출 (우축, 백만원)
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* 월별 신청건수 & 확정률 차트 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 
+              className="text-[#1e1e1e]"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 700, 
+                fontSize: '1.125rem',
+                letterSpacing: 'var(--letter-spacing-snug)'
+              }}
+            >
+              월별 예약 신청 건수 & 확정률
+            </h3>
+            <p 
+              className="text-gray-500 text-xs mt-1"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 400,
+                letterSpacing: 'var(--letter-spacing-wide)'
+              }}
+            >
+              월별 신청 현황과 확정률 트렌드 분석
+            </p>
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={350}>
+          <ComposedChart
+            data={filteredApplicationData}
+            margin={{ top: 30, right: 30, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            
+            <XAxis 
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#6b7280' }}
+              dy={10}
+            />
+            
+            {/* 왼쪽 Y축 - 신청건수 */}
+            <YAxis 
+              yAxisId="left"
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 'auto']}
+              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#6b7280' }}
+            />
+            
+            {/* 오른쪽 Y축 - 확정률 (%) */}
+            <YAxis 
+              yAxisId="right"
+              orientation="right"
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 100]}
+              tickFormatter={(value) => `${value}%`}
+              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#ef4444' }}
+            />
+            
+            <Tooltip 
+              contentStyle={{ 
+                fontFamily: 'Pretendard Variable, sans-serif',
+                fontSize: '0.75rem',
+                borderRadius: '0.75rem',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+              formatter={(value: any, name: string) => {
+                if (name === 'confirmRate') return [`${value}%`, '확정률'];
+                return [value, name === 'applied' ? '신청건수' : name];
+              }}
+            />
+            
+            {/* Bar - 신청건수 (회색) */}
+            <Bar
+              yAxisId="left"
+              dataKey="applied"
+              fill="#9ca3af"
+              barSize={30}
+              radius={[6, 6, 0, 0]}
+              name="신청건수"
+              label={{
+                position: 'top',
+                fill: '#1e1e1e',
+                fontSize: '0.8125rem',
+                fontFamily: 'Pretendard Variable, sans-serif',
+                fontWeight: 600,
+                offset: 8
+              }}
+            />
+            
+            {/* Line - 확정률 (빨간색) */}
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="confirmRate"
+              stroke="#ef4444"
+              strokeWidth={2}
+              dot={{ 
+                fill: '#ef4444', 
+                r: 4,
+                strokeWidth: 2,
+                stroke: '#ffffff'
+              }}
+              activeDot={{ r: 6 }}
+              name="confirmRate"
+              label={{
+                position: 'bottom',
+                fill: '#ef4444',
+                fontSize: '0.8125rem',
+                fontFamily: 'Pretendard Variable, sans-serif',
+                fontWeight: 700,
+                offset: 10,
+                formatter: (value: number) => `${value}%`
+              }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* Legend */}
+        <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-gray-400"></div>
+            <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>신청건수</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>확정률</span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly Bookings Trend */}
         <motion.div
@@ -934,34 +1350,34 @@ export default function DashboardContent() {
           </ResponsiveContainer>
 
           {/* Legend */}
-          <div className="mt-6 pt-5 border-t border-gray-200 flex flex-wrap items-center justify-center gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-0.75 rounded-full bg-[#000050]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-[#000050]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 총 예약
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#10b981]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#10b981]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 완료
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#3b82f6]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#3b82f6]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 확정
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#f59e0b]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#f59e0b]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 대기중
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#ef4444]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#ef4444]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 취소
               </span>
             </div>
@@ -1081,28 +1497,28 @@ export default function DashboardContent() {
           </ResponsiveContainer>
 
           {/* Legend */}
-          <div className="mt-6 pt-5 border-t border-gray-200 flex flex-wrap items-center justify-center gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-0.75 rounded-full bg-[#000050]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-[#000050]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 매출
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-0.75 rounded-full bg-[#f59e0b]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-[#f59e0b]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 정산
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#10b981]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#10b981]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 수익
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded bg-[#ef4444]" />
-              <span className="text-sm text-gray-700" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#ef4444]"></div>
+              <span className="text-xs text-gray-600" style={{ fontFamily: "Pretendard Variable", fontWeight: 500 }}>
                 비용
               </span>
             </div>
@@ -1110,11 +1526,164 @@ export default function DashboardContent() {
         </motion.div>
       </div>
 
+      {/* Charts Row 3 - Booking Status Pie Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Booking Status Distribution */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => handleChartClick(bookingStatusData, 'status')}
+        >
+          <div className="mb-6">
+            <h3 
+              className="text-[#1e1e1e] space-golden-xs rhythm-snug"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 700, 
+                fontSize: '1.125rem',
+                letterSpacing: 'var(--letter-spacing-snug)'
+              }}
+            >
+              예약 상태별 분포
+            </h3>
+            <p 
+              className="text-gray-500 text-xs mt-1"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 400,
+                letterSpacing: 'var(--letter-spacing-wide)',
+                lineHeight: 'var(--line-height-normal)'
+              }}
+            >
+              전체 예약의 상태별 현황 • 차트 클릭 시 상세보기
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-center">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={bookingStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value, percent }) => {
+                    const total = bookingStatusData.reduce((sum, item) => sum + item.value, 0);
+                    const percentage = ((value / total) * 100).toFixed(0);
+                    return `${name} ${value} (${percentage}%)`;
+                  }}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                >
+                  {bookingStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    fontFamily: 'Pretendard Variable, sans-serif',
+                    fontSize: '0.75rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                  formatter={(value: any) => [`${value}건`, '예약 건수']}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Booking Type Distribution */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+        >
+          <div className="mb-6">
+            <h3 
+              className="text-[#1e1e1e] space-golden-xs rhythm-snug"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 700, 
+                fontSize: '1.125rem',
+                letterSpacing: 'var(--letter-spacing-snug)'
+              }}
+            >
+              매니지먼트 타입
+            </h3>
+            <p 
+              className="text-gray-500 text-xs mt-1"
+              style={{ 
+                fontFamily: 'Pretendard Variable, sans-serif', 
+                fontWeight: 400,
+                letterSpacing: 'var(--letter-spacing-wide)',
+                lineHeight: 'var(--line-height-normal)'
+              }}
+            >
+              예약 유형별 통계 • 강연, 방송, 촬영, 자문 등
+            </p>
+          </div>
+          
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart
+              data={bookingTypeData}
+              layout="vertical"
+              margin={{ top: 5, right: 50, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+              <XAxis 
+                type="number"
+                axisLine={false}
+                tickLine={false}
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.75rem', fill: '#6b7280' }}
+              />
+              <YAxis 
+                type="category"
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                width={60}
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontSize: '0.875rem', fill: '#1e1e1e', fontWeight: 600 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  fontFamily: 'Pretendard Variable, sans-serif',
+                  fontSize: '0.75rem',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                }}
+                formatter={(value: any) => [`${value}건`, '예약 건수']}
+              />
+              <Bar 
+                dataKey="value" 
+                fill="#3b82f6"
+                radius={[0, 4, 4, 0]}
+                label={{ 
+                  position: 'right', 
+                  fill: '#1e1e1e',
+                  fontFamily: 'Pretendard Variable, sans-serif',
+                  fontSize: '0.875rem',
+                  fontWeight: 600
+                }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+      </div>
+
       {/* Regional Distribution */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.4 }}
       >
         <MapHeatmapContent 
           selectedExpert={selectedExpert}

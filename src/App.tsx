@@ -12,6 +12,7 @@ import HomePage from "./components/HomePage";
 import AboutVisionPage from "./pages/about/AboutVisionPage";
 import AboutCompetencyPage from "./pages/about/AboutCompetencyPage";
 import AboutHistoryPage from "./pages/about/AboutHistoryPage";
+import AboutLocationPage from "./pages/about/AboutLocationPage";
 import BusinessOverviewPage from "./pages/business/BusinessOverviewPage";
 import BusinessHatiPage from "./pages/business/BusinessHatiPage";
 import BusinessInsiqPage from "./pages/business/BusinessInsiqPage";
@@ -19,7 +20,6 @@ import ProfilePage from "./pages/ProfilePage";
 import ContentPRPage from "./pages/content/ContentPRPage";
 import ContentYoutubePage from "./pages/content/ContentYoutubePage";
 import ContactInquiryPage from "./pages/contact/ContactInquiryPage";
-import ContactLocationPage from "./pages/contact/ContactLocationPage";
 import AdminPage from "./pages/AdminPage";
 import ExpertSettlementPage from "./pages/ExpertSettlementPage";
 import ScrollToTop from "./components/ScrollToTop";
@@ -73,6 +73,10 @@ function AppContent() {
             <Route
               path="/about/history"
               element={<AboutHistoryPage />}
+            />
+            <Route
+              path="/about/location"
+              element={<AboutLocationPage />}
             />
 
             {/* Business Routes */}
@@ -140,9 +144,7 @@ function AppContent() {
             {/* Contact Routes */}
             <Route
               path="/contact"
-              element={
-                <Navigate to="/contact/inquiry" replace />
-              }
+              element={<ContactInquiryPage />}
             />
             <Route
               path="/contact/inquiry"
@@ -150,7 +152,7 @@ function AppContent() {
             />
             <Route
               path="/contact/location"
-              element={<ContactLocationPage />}
+              element={<Navigate to="/about/location" replace />}
             />
 
             {/* Admin Route */}
