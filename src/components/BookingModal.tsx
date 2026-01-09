@@ -233,16 +233,50 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
         if (locationType === 'confirmed') {
           return location.trim() !== '';
         } else if (locationType === 'undecided') {
-          return selectedCity.trim() !== '' && selectedDistrict.trim() !== '';
+          return addressPostcode.trim() !== '' && addressDetail.trim() !== '';
         }
         return false;
-      case 'details': return formData.agency.trim() !== '' && formData.contactName.trim() !== '' && formData.contactPhone.trim() !== '' && formData.contactEmail.trim() !== '';
+      case 'details': 
+        return formData.agency.trim() !== '' && 
+               formData.topic.trim() !== '' && 
+               formData.contactName.trim() !== '' && 
+               formData.contactPhone.trim() !== '' && 
+               formData.contactEmail.trim() !== '';
       default: return true;
     }
   };
 
   const handleNext = () => {
-    if (!canProceedToNext()) return;
+    if (!canProceedToNext()) {
+      // 단계별 알림 메시지
+      switch (currentStep) {
+        case 'expert':
+          alert('전문가를 선택해주세요.');
+          break;
+        case 'datetime':
+          if (!selectedDate) alert('날짜를 선택해주세요.');
+          else if (!selectedTime) alert('시간을 선택해주세요.');
+          break;
+        case 'location':
+          if (locationType === 'confirmed') {
+            alert('온라인 장소(링크)를 입력해주세요.');
+          } else {
+            if (!addressPostcode) alert('우편번호를 입력해주세요.');
+            else if (!addressDetail?.trim()) alert('상세주소를 입력해주세요.');
+          }
+          break;
+        case 'details':
+          const missing = [];
+          if (!formData.agency?.trim()) missing.push('기관명');
+          if (!formData.topic?.trim()) missing.push('강연 주제');
+          if (!formData.contactName?.trim()) missing.push('담당자명');
+          if (!formData.contactPhone?.trim()) missing.push('담당자 전화번호');
+          if (!formData.contactEmail?.trim()) missing.push('담당자 이메일');
+          alert(`다음 항목을 입력해주세요:\n${missing.join(', ')}`);
+          break;
+      }
+      return;
+    }
     
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
@@ -258,15 +292,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
   };
 
   const handleSubmit = async () => {
-    // 필수 필드 검증
+    // 최종 안전장치 검증 (모든 단계를 거쳤다면 이미 검증되었음)
     if (!selectedDate || !selectedTime || !selectedExpert) {
       alert('필수 정보가 누락되었습니다.');
-      return;
-    }
-
-    if (!formData.agency || !formData.topic || !formData.contactName || 
-        !formData.contactPhone || !formData.contactEmail) {
-      alert('모든 필수 항목을 입력해주세요.');
       return;
     }
 
@@ -1471,7 +1499,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
               <Button
                 onClick={handleNext}
                 disabled={!canProceedToNext()}
-                className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-6 py-5 disabled:opacity-50"
+                className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-6 py-5 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
               >
                 다음

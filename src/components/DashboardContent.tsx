@@ -33,7 +33,12 @@ import {
   ComposedChart
 } from 'recharts';
 import MapHeatmapContent from './MapHeatmapContent';
-import { useDashboardStatsQuery, useMonthlyStatsQuery } from '../hooks/useDashboardQueries';
+import { 
+  useDashboardStatsQuery, 
+  useMonthlyStatsQuery,
+  type DashboardStats,
+  type MonthlyStats 
+} from '../hooks/useDashboardQueries';
 import { useReservationsQuery } from '../hooks/useReservationQueries';
 import { 
   getBookingStatusData,
@@ -462,16 +467,20 @@ export default function DashboardContent() {
     limit: 5,
   });
 
-  // 데이터 추출
-  const stats = statsData || {
+  // 데이터 추출 (타입 안전성 보장)
+  const stats: DashboardStats = statsData || {
     totalReservations: 0,
+    completedReservations: 0,
+    pendingReservations: 0,
+    totalRevenue: 0,
+    averageRating: 0,
+    activeExperts: 0,
     reservationsByStatus: {
       pending: 0,
       confirmed: 0,
       completed: 0,
       cancelled: 0,
     },
-    totalRevenue: 0,
     totalSettlements: 0,
     pendingInquiries: 0,
   };
@@ -480,7 +489,12 @@ export default function DashboardContent() {
 
   // 계산된 통계 (API 데이터 사용)
   const totalBookings = stats.totalReservations;
-  const bookingStats = stats.reservationsByStatus;
+  const bookingStats = stats.reservationsByStatus || {
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+  };
   const totalRevenue = stats.totalRevenue / 1000000; // 백만원 단위
   const avgAmount = totalBookings > 0 ? (stats.totalRevenue / totalBookings) / 1000000 : 0; // 백만원 단위
   
@@ -1073,7 +1087,7 @@ export default function DashboardContent() {
                 onClick={(data) => handleChartClick(data, 'month')}
               />
               
-              {/* 예약 건수 영역 차트 (블루, 앞에 배치) */}
+              {/* 예약 건수 영역 차트 (블루, 앞에 배���) */}
               <Area
                 yAxisId="left"
                 type="monotone"
