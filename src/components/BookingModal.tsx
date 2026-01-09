@@ -282,7 +282,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     }
 
     if (!formData.agency || !formData.topic || !formData.contactName || 
-        !formData.contactPhone || !formData.contactEmail || !formData.fee) {
+        !formData.contactPhone || !formData.contactEmail) {
       alert('모든 필수 항목을 입력해주세요.');
       return;
     }
@@ -318,7 +318,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       contactName: formData.contactName,
       contactPhone: formData.contactPhone,
       contactEmail: formData.contactEmail,
-      fee: parseInt(formData.fee) || 0,
+      fee: formData.fee && formData.fee.trim() !== '' 
+        ? (parseInt(formData.fee) || 0) 
+        : 0,
       message: formData.message || undefined,
     };
 
