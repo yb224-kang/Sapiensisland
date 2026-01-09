@@ -235,9 +235,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
   const steps = [
     { id: 'expert', label: '전문가 선택', icon: User },
     { id: 'datetime', label: '날짜 & 시간', icon: Calendar },
-    { id: 'location', label: '장소 선택', icon: MapPin },
+    { id: 'location', label: '장소', icon: MapPin },
     { id: 'details', label: '상세 정보', icon: Clock },
-    { id: 'confirm', label: '예약 확인', icon: CheckCircle2 }
+    { id: 'confirm', label: '내용확인', icon: CheckCircle2 }
   ];
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
@@ -253,7 +253,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
           return selectedCity.trim() !== '' && selectedDistrict.trim() !== '';
         }
         return false;
-      case 'details': return formData.agency.trim() !== '' && formData.client.trim() !== '' && formData.contactName.trim() !== '' && formData.contactPhone.trim() !== '' && formData.contactEmail.trim() !== '';
+      case 'details': return formData.agency.trim() !== '' && formData.contactName.trim() !== '' && formData.contactPhone.trim() !== '' && formData.contactEmail.trim() !== '';
       default: return true;
     }
   };
@@ -281,7 +281,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       return;
     }
 
-    if (!formData.client || !formData.topic || !formData.contactName || 
+    if (!formData.agency || !formData.topic || !formData.contactName || 
         !formData.contactPhone || !formData.contactEmail || !formData.fee) {
       alert('모든 필수 항목을 입력해주세요.');
       return;
@@ -304,8 +304,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
         ? location 
         : `${addressPostcode} ${addressDetail}`.trim(), // 오프라인일 경우 주소 조합
       region, // string (필수)
-      agency: formData.agency || undefined, // optional
-      client: formData.client, // 필수
+      agency: formData.agency, // 필수 (요청사 & 주최사 통합)
       topic: formData.topic, // 필수
       audience: formData.audience || undefined, // optional
       contactName: formData.contactName, // 필수
@@ -501,7 +500,6 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                   >
                     {selectedExpertData.name} 전문가
                   </span>
-                  와의 상담 일정
                 </p>
               </div>
               <button
@@ -534,9 +532,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
             >
               {currentStep === 'expert' && '전문가를 선택해주세요'}
               {currentStep === 'datetime' && '날짜와 시간을 선택해주세요'}
-              {currentStep === 'location' && '상담 장소를 선택해주세요'}
+              {currentStep === 'location' && '강연 장소를 기입해주세요'}
               {currentStep === 'details' && '문의하기'}
-              {currentStep === 'confirm' && '예약 내용을 확인해주세요'}
+              {currentStep === 'confirm' && '문의 내용을 확인해주세요'}
             </h3>
             
             {/* Subtitle for details step */}
@@ -766,13 +764,13 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-3"
                       >
-                        {/* Instructions */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                        {/* Additional Notice */}
+                        <div className="mb-4">
                           <p
-                            className="text-blue-700 text-[12px] m-0"
-                            style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
+                            className="text-gray-500 text-[11px] m-0"
+                            style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
                           >
-                            💡 드래그하여 시간 범위를 선택하세요
+                            * 선일정 및 이동 거리에 따라 요청하신 시간이 어려울 수 있습니다.
                           </p>
                         </div>
 
@@ -1112,39 +1110,20 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                     </div>
                     
                     <div className="space-y-4">
-                      {/* Agency */}
+                      {/* Agency & Client Combined */}
                       <div>
                         <label
                           className="block text-[var(--section-text-primary)] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
                         >
-                          요청사 (AGENCY) <span className="text-red-500">*</span>
+                          요청사(AGENCY) & 주최사(고객사) <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={formData.agency}
                           onChange={(e) => setFormData({ ...formData, agency: e.target.value })}
                           required
-                          placeholder="요청사 이름을 입력해주세요"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
-                        />
-                      </div>
-
-                      {/* Client */}
-                      <div>
-                        <label
-                          className="block text-[var(--section-text-primary)] mb-2"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
-                        >
-                          주최사 (고객사) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.client}
-                          onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                          required
-                          placeholder="주최사 이름을 입력해주세요"
+                          placeholder="요청사, 주최사 이름을 입력해주세요"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[var(--section-brand-primary)] focus:outline-none transition-colors bg-white"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500, fontSize: '0.875rem' }}
                         />
@@ -1363,27 +1342,13 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="text-[var(--section-text-secondary)]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                         >
-                          요청사:
+                          요청사(AGENCY) & 주최사(고객사):
                         </span>
                         <span
                           className="text-[var(--section-text-primary)]"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
                         >
                           {formData.agency}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span
-                          className="text-[var(--section-text-secondary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                        >
-                          주최사:
-                        </span>
-                        <span
-                          className="text-[var(--section-text-primary)]"
-                          style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
-                        >
-                          {formData.organizer}
                         </span>
                       </div>
                     </div>
@@ -1526,7 +1491,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                 className="bg-[var(--section-brand-primary)] hover:bg-[var(--section-brand-primary)]/90 text-white px-8 py-5 disabled:opacity-50"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
               >
-                {createReservationMutation.isPending ? '처리 중...' : '예약 완료'}
+                {createReservationMutation.isPending ? '처리 중...' : '제출완료'}
               </Button>
             )}
           </div>

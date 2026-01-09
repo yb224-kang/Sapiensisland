@@ -134,7 +134,7 @@ export default function ProfileBookingPage() {
               className="text-[var(--section-text-secondary)] text-[14px] md:text-[16px]"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
             >
-              원하시는 전문가와 일정을 선택하고 예약을 진행하실 수 있습니다
+              원하시는 전문가를 선택하고 강연문의를 진행할 수 있습니다
             </p>
           </div>
 

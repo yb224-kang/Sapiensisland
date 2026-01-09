@@ -619,7 +619,7 @@ function ExpertsContent() {
           <div className="flex gap-2">
             <span className="text-purple-600">•</span>
             <div>
-              <strong style={{ fontWeight: 600 }}>상세 정보:</strong> 학력, 주요 강연/전문분야, 짧은 소개(shortBio)
+              <strong style={{ fontWeight: 600 }}>상세 정보:</strong> 학력, 주요 강연 제목 및 주제, 주요 강연 매체, 짧은 소개(shortBio)
             </div>
           </div>
           <div className="flex gap-2">
@@ -897,7 +897,7 @@ function ExpertFormModal({ isOpen, onClose, title, mode, expert }: any) {
 
               <div>
                 <label className="block text-sm text-gray-900 mb-2" style={{ fontWeight: 600 }}>
-                  주요 강연/전문분야 <span className="text-red-500">*</span>
+                  주요 강연 제목 및 주제 <span className="text-red-500">*</span>
                 </label>
                 <textarea 
                   className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl bg-white placeholder:text-gray-400 hover:border-gray-400 focus:border-[#000050] focus:ring-4 focus:ring-[#000050]/10 transition-all duration-200 resize-none"
@@ -907,6 +907,21 @@ function ExpertFormModal({ isOpen, onClose, title, mode, expert }: any) {
                   defaultValue={expert?.expertise}
                 />
                 <p className="text-xs text-gray-500 mt-2">플립 카드 뒷면 '주요 분야' 섹션에 표시 (처음 3줄만 표시)</p>
+              </div>
+
+              {/* 주요 강연 매체 */}
+              <div>
+                <label className="block text-sm text-gray-900 mb-2" style={{ fontWeight: 600 }}>
+                  주요 강연 매체
+                </label>
+                <textarea 
+                  className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-xl bg-white placeholder:text-gray-400 hover:border-gray-400 focus:border-[#000050] focus:ring-4 focus:ring-[#000050]/10 transition-all duration-200 resize-none"
+                  style={{ fontWeight: 400 }}
+                  placeholder="- 삼성전자, SK하이닉스, 현대자동차&#10;- LG그룹, 포스코, 네이버&#10;- 카카오, 신한은행 등"
+                  rows={4}
+                  defaultValue={expert?.media}
+                />
+                <p className="text-xs text-gray-500 mt-2">전문가가 강연을 진행한 주요 기업 및 기관 (선택 사항)</p>
               </div>
             </div>
           </div>

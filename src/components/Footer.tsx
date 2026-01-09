@@ -31,7 +31,7 @@ export default function Footer() {
                     className="text-[0.8125rem] sm:text-[0.875rem] md:text-[1rem] tracking-[-0.08px] leading-[1.5]"
                     style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
                   >
-                    대표: 송상윤
+                    대표 : 송상윤
                   </p>
                   <div className="hidden md:block h-[16px] w-0 border-l border-gray-500" />
                 </div>
@@ -39,7 +39,7 @@ export default function Footer() {
                   className="text-[0.8125rem] sm:text-[0.875rem] md:text-[1rem] tracking-[-0.08px] leading-[1.5]"
                   style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
                 >
-                  사업자등록번호: 543-81-02692
+                  사업자등록번호 : 543-81-02692
                 </p>
               </div>
 
@@ -48,7 +48,7 @@ export default function Footer() {
                 className="text-[0.8125rem] sm:text-[0.875rem] md:text-[1rem] tracking-[-0.08px] leading-[1.5]"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
               >
-                대표전화 :02-2088-6584
+                대표전화 : 02-2088-6584
               </p>
 
               {/* Contact Link */}

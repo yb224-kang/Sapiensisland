@@ -136,7 +136,8 @@ export default function HeroSection({ onOpenBookingModal }: HeroSectionProps) {
               className="text-[var(--section-text-secondary)] text-[1rem] md:text-[1.125rem] lg:text-[1.25rem] leading-relaxed"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
             >
-              지혜전문가 그룹과 다양한 사람들이 소통하여 세상의 모든 마인드를 해석하는 지식 액셀러레이팅 서비스
+              지혜전문가 그룹과 다양한 사람들이 소통하여<br />
+              세상의 모든 마인드를 해석하는 지식 액셀러레이팅 서비스
             </motion.p>
 
             {/* CTA Buttons */}

@@ -92,7 +92,7 @@ export default function PageHeroLayout({
 
         {/* Bottom Tab Navigation */}
         <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center px-[var(--section-padding-x-mobile)] md:px-[var(--section-padding-x-tablet)] lg:px-[var(--section-padding-x-desktop)]">
-          <TabNavigation tabs={tabs} basePath={basePath} />
+          {tabs && basePath && <TabNavigation tabs={tabs} basePath={basePath} />}
         </div>
       </div>
 

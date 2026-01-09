@@ -208,11 +208,10 @@ export default function AboutLocationPage() {
                 </h3>
               </div>
               <div
-                className="text-[var(--section-text-secondary)] text-[13px] md:text-[14px] leading-relaxed space-y-2"
+                className="text-[var(--section-text-secondary)] text-[13px] md:text-[14px] leading-relaxed"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
               >
-                <p>건물 내 주차장 이용 가능</p>
-                <p className="text-[12px] text-[var(--section-text-secondary)]/70">방문 전 주차 가능 여부 확인 권장</p>
+                <p>방문 전 주차 가능 여부 확인 권장</p>
               </div>
             </div>
           </div>

@@ -30,38 +30,6 @@ export default function ContentPRPage() {
       source: "조선일보",
       url: "https://www.chosun.com/special/special_section/2025/07/22/35PUQEWDGJEO7MPFFRHS2B573Q/?utm_source=naver&utm_medium=referral&utm_campaign=naver-news",
       image: "https://www.chosun.com/resizer/v2/THJSEPM7FRHHRN5LJV4J2BSKG4.jpg?auth=f385160f6f6657d0774f0ba85e9bdf7fbf2b1cd4a818e0ab765f5f7e4553cf80&width=560&height=784&smart=true"
-    },
-    {
-      id: 3,
-      title: "사피엔스아일랜드, '헥사코 모델' 활용 초개인화 플랫폼 개발 착수",
-      date: "2024.09.05",
-      source: "한국경제",
-      url: "https://www.newsway.co.kr/news/view?ud=2024090515202691903",
-      image: "https://nimage.newsway.co.kr/photo/2024/09/05/20240905000146_0700.jpg"
-    },
-    {
-      id: 4,
-      title: "사피엔스아일랜드, '헥사코 모델' 활용 초개인화 플랫폼 개발 착수",
-      date: "2024.09.05",
-      source: "머니투데이",
-      url: "https://www.newsway.co.kr/news/view?ud=2024090515202691903",
-      image: "https://nimage.newsway.co.kr/photo/2024/09/05/20240905000146_0700.jpg"
-    },
-    {
-      id: 5,
-      title: "사피엔스아일랜드, '헥사코 모델' 활용 초개인화 플랫폼 개발 착수",
-      date: "2024.09.05",
-      source: "조선비즈",
-      url: "https://www.newsway.co.kr/news/view?ud=2024090515202691903",
-      image: "https://nimage.newsway.co.kr/photo/2024/09/05/20240905000146_0700.jpg"
-    },
-    {
-      id: 6,
-      title: "사피엔스아일랜드, '헥사코 모델' 활용 초개인화 플랫폼 개발 착수",
-      date: "2024.09.05",
-      source: "이데일리",
-      url: "https://www.newsway.co.kr/news/view?ud=2024090515202691903",
-      image: "https://nimage.newsway.co.kr/photo/2024/09/05/20240905000146_0700.jpg"
     }
   ];
 
@@ -75,7 +43,7 @@ export default function ContentPRPage() {
       basePath="/content"
     >
       {/* PR Section */}
-      <SectionContainer backgroundColor="white" reducedTopPadding>
+      <SectionContainer backgroundColor="white" reducedTopPadding alignItems="start">
         <div className="w-full max-w-[97.5rem]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {prItems.map((item) => (

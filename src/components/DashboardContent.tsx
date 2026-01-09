@@ -919,6 +919,20 @@ export default function DashboardContent() {
                 {dateRanges.find(d => d.value === dateRange)?.label} • 차트 클릭 시 상세보기
               </p>
             </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm tabular-nums" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}>
+                  예약 +18.3%
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm tabular-nums" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}>
+                  매출 +23.1%
+                </span>
+              </div>
+            </div>
           </div>
           
           <ResponsiveContainer width="100%" height={400}>
@@ -1114,6 +1128,16 @@ export default function DashboardContent() {
             >
               월별 신청 현황과 확정률 트렌드 분석
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-gray-400" />
+              <span className="text-xs text-gray-600" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}>신청건수</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="text-xs text-gray-600" style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}>확정률</span>
+            </div>
           </div>
         </div>
 

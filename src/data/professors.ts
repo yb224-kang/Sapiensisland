@@ -8,6 +8,7 @@ export interface Professor {
   image: string;           // 이미지 경로
   education: string;       // 학력 (상세, 줄바꿈 포함)
   expertise: string;       // 주요 강연/내용 (상세, 줄바꿈 포함)
+  media?: string;          // 주요 강연 매체 (선택 사항)
   shortBio: string;        // 카드 호버시 표시할 짧은 소개 (2-3줄)
 }
 

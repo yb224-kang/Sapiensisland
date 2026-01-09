@@ -16,36 +16,17 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
 
   // Parse expertise into array
   const expertiseList = expert.expertise.split('\n').filter(item => item.trim());
-  
-  // Extract keywords from expertise
-  const extractKeywords = (text: string) => {
-    const keywords = new Set<string>();
-    const patterns = [
-      /\[([^\]]+)\]/g, // Extract text within brackets
-    ];
-    
-    patterns.forEach(pattern => {
-      const matches = text.matchAll(pattern);
-      for (const match of matches) {
-        keywords.add(match[1]);
-      }
-    });
-    
-    return Array.from(keywords);
-  };
-
-  const keywords = extractKeywords(expert.expertise);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[67.5rem] max-h-[90vh] overflow-y-auto p-0 gap-0 bg-gradient-to-b from-white to-gray-50/50" aria-describedby={undefined}>
+      <DialogContent className="max-w-[67.5rem] max-h-[90vh] overflow-y-auto p-0 gap-0 bg-white" aria-describedby={undefined}>
         {/* Accessible Title - Hidden visually but available for screen readers */}
         <DialogTitle className="sr-only">
           전문가 프로필 - {expert.name}
         </DialogTitle>
 
         {/* Header with Close Button - Enhanced */}
-        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/80 px-[1.5rem] md:px-[2rem] py-[1.25rem] flex items-center justify-between shadow-sm">
+        <div className="sticky top-0 z-50 bg-white border-b border-gray-200 px-[1.5rem] md:px-[2rem] py-[1.25rem] flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-[0.75rem]">
             <div className="w-[2.5rem] h-[2.5rem] rounded-full bg-gradient-to-br from-[var(--section-brand-primary)] to-[var(--section-brand-primary)]/70 flex items-center justify-center">
               <Sparkles className="w-[1.25rem] h-[1.25rem] text-white" />
@@ -66,12 +47,11 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
         </div>
 
         {/* Content - Enhanced with better spacing and visual hierarchy */}
-        <div className="p-[1.5rem] md:p-[2.5rem] space-y-[2.5rem] relative z-0 pb-[7rem]">
+        <div className="p-[1.5rem] md:p-[2.5rem] space-y-[2.5rem] relative z-0 pb-[7rem] bg-gray-50">
           {/* Profile Header - Enhanced */}
-          <div className="flex flex-col md:flex-row gap-[2rem] items-center md:items-start bg-gradient-to-br from-white to-[var(--section-brand-primary)]/5 rounded-2xl p-[2rem] border border-[var(--section-brand-primary)]/10 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-[2rem] items-center bg-gradient-to-br from-white to-[var(--section-brand-primary)]/5 rounded-2xl p-[2rem] border border-[var(--section-brand-primary)]/10 shadow-sm">
             {/* Profile Image - Enhanced with gradient ring */}
             <div className="flex-shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--section-brand-primary)] to-purple-500 rounded-2xl blur-xl opacity-20 animate-pulse"></div>
               <div className="relative w-[10rem] h-[10rem] rounded-2xl overflow-hidden ring-4 ring-white shadow-2xl">
                 <ImageWithFallback
                   src={expert.image}
@@ -102,65 +82,6 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
                 <Award className="w-[1rem] h-[1rem] mr-[0.5rem]" />
                 {expert.field} 전문가
               </div>
-
-              {/* Short Bio - Enhanced */}
-              {expert.shortBio && (
-                <p
-                  className="mt-[1.5rem] text-[var(--section-text-secondary)] text-[0.9375rem] md:text-[1rem] leading-relaxed bg-white/80 rounded-xl p-[1rem] border border-gray-100"
-                  style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
-                >
-                  {expert.shortBio}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Keywords/Tags - Enhanced with gradient cards */}
-          {keywords.length > 0 && (
-            <div className="bg-white rounded-2xl p-[1.75rem] shadow-sm border border-gray-100">
-              <div className="flex items-center gap-[0.75rem] mb-[1.25rem]">
-                <div className="w-[2.25rem] h-[2.25rem] rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-                  <Award className="w-[1.125rem] h-[1.125rem] text-white" />
-                </div>
-                <h4
-                  className="text-[var(--section-text-primary)] text-[1.125rem] md:text-[1.25rem]"
-                  style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
-                >
-                  주요 키워드
-                </h4>
-              </div>
-              <div className="flex flex-wrap gap-[0.625rem]">
-                {keywords.map((keyword, index) => (
-                  <span
-                    key={index}
-                    className="px-[1rem] py-[0.5rem] bg-gradient-to-r from-gray-50 to-gray-100 text-[var(--section-text-secondary)] rounded-lg text-[0.8125rem] md:text-[0.875rem] hover:from-[var(--section-brand-primary)]/10 hover:to-[var(--section-brand-primary)]/5 hover:text-[var(--section-brand-primary)] transition-all duration-200 border border-gray-200 hover:border-[var(--section-brand-primary)]/30 shadow-sm hover:shadow-md cursor-default"
-                    style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Education - Enhanced with gradient accent */}
-          <div className="bg-white rounded-2xl p-[1.75rem] shadow-sm border border-gray-100">
-            <div className="flex items-center gap-[0.75rem] mb-[1.25rem]">
-              <div className="w-[2.25rem] h-[2.25rem] rounded-lg bg-gradient-to-br from-blue-400 to-[var(--section-brand-primary)] flex items-center justify-center shadow-md">
-                <GraduationCap className="w-[1.125rem] h-[1.125rem] text-white" />
-              </div>
-              <h4
-                className="text-[var(--section-text-primary)] text-[1.125rem] md:text-[1.25rem]"
-                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
-              >
-                학력 및 경력
-              </h4>
-            </div>
-            <div
-              className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-[1.5rem] text-[var(--section-text-secondary)] text-[0.9375rem] md:text-[1rem] leading-relaxed whitespace-pre-line border border-gray-100/50"
-              style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
-            >
-              {expert.education}
             </div>
           </div>
 
@@ -174,7 +95,7 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
                 className="text-[var(--section-text-primary)] text-[1.125rem] md:text-[1.25rem]"
                 style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
               >
-                주요 강연 및 전문 분야
+                주요 강연 제목 및 주제
               </h4>
             </div>
             <div className="space-y-[0.875rem]">
@@ -201,6 +122,29 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
               ))}
             </div>
           </div>
+
+          {/* Media Section - 주요 강연 매체 */}
+          {expert.media && expert.media.trim() && (
+            <div className="bg-white rounded-2xl p-[1.75rem] shadow-sm border border-gray-100">
+              <div className="flex items-center gap-[0.75rem] mb-[1.25rem]">
+                <div className="w-[2.25rem] h-[2.25rem] rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
+                  <Tv className="w-[1.125rem] h-[1.125rem] text-white" />
+                </div>
+                <h4
+                  className="text-[var(--section-text-primary)] text-[1.125rem] md:text-[1.25rem]"
+                  style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700 }}
+                >
+                  주요 강연 매체
+                </h4>
+              </div>
+              <div
+                className="bg-gradient-to-br from-gray-50 to-emerald-50/30 rounded-xl p-[1.5rem] text-[var(--section-text-secondary)] text-[0.9375rem] md:text-[1rem] leading-relaxed whitespace-pre-line border border-gray-100/50"
+                style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 400 }}
+              >
+                {expert.media}
+              </div>
+            </div>
+          )}
 
           {/* Media Appearances - Enhanced with gradient background */}
           {(expert.expertise.includes('KBS') || expert.expertise.includes('tvn') || expert.expertise.includes('JTBC')) && (
@@ -231,7 +175,7 @@ export default function ExpertDetailModal({ expert, isOpen, onClose, onBooking }
         </div>
 
         {/* Floating CTA Button - Always visible at bottom */}
-        <div className="sticky bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white to-white/95 backdrop-blur-lg border-t border-gray-200/80 px-[1.5rem] md:px-[2.5rem] py-[1.25rem] shadow-2xl">
+        <div className="sticky bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-[1.5rem] md:px-[2.5rem] py-[1.25rem] shadow-2xl">
           <Button
             onClick={() => {
               onBooking(expert.id);

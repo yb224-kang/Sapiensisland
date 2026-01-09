@@ -71,7 +71,7 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
               className="text-center text-[var(--section-text-secondary)] text-[0.875rem] md:text-[1rem] max-w-[37.5rem]"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
             >
-              원하시는 전문가와 일정을 선택하고 예약을 진행하실 수 있습니다
+              원하시는 전문가를 선택하고 강연문의를 진행할 수 있습니다
             </motion.p>
 
             {/* Professors Grid */}
@@ -175,7 +175,7 @@ export default function ProfilePage({ onOpenBookingModal }: ProfilePageProps) {
                   className="text-[var(--section-text-secondary)] text-[0.875rem] md:text-[1rem] mb-6"
                   style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 500 }}
                 >
-                  원하시는 전문가와 일정을 선택하고 예약을 진행하실 수 있습니다
+                  원하시는 전문가를 선택하고 강연문의를 진행할 수 있습니다
                 </p>
                 <Button
                   onClick={() => onOpenBookingModal(null)}

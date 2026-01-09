@@ -26,7 +26,7 @@ export default function ExpertsGridSection() {
               className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
-              KNOWLEDGE EXPERTS
+              WISDOM EXPERTS
             </div>
             
             {/* Main Heading */}
@@ -34,8 +34,8 @@ export default function ExpertsGridSection() {
               className="text-[var(--section-text-primary)] text-[2rem] md:text-[2.625rem] lg:text-[3rem] leading-tight"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 900 }}
             >
-              사피엔스와 함께하는<br />
-              Wisdom Experts
+              여러분의 인사이트를 열어줄<br />
+              지혜전문가를 소개합니다
             </h2>
             
             {/* CTA Button */}

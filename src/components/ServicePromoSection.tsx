@@ -47,7 +47,7 @@ export default function ServicePromoSection() {
               className="inline-flex items-center self-start px-3 py-1.5 bg-white border-2 border-[#000050] text-[#000050] rounded-full text-[0.625rem] md:text-[0.75rem] tracking-wider"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 800 }}
             >
-              OUR SERVICES
+              SERVICES
             </div>
             
             {/* Main Heading */}
@@ -55,8 +55,7 @@ export default function ServicePromoSection() {
               className="text-[var(--section-text-primary)] text-[2rem] md:text-[2.625rem] lg:text-[3rem] leading-tight"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 900 }}
             >
-              AI 기반 지식 플랫폼으로<br />
-              비즈니스를 혁신하세요
+              모든 질문에 석학인 지혜전문가분들이 답변을 해드립니다.
             </h2>
             
             {/* CTA Button */}
@@ -67,7 +66,7 @@ export default function ServicePromoSection() {
               className="bg-[#000050] text-white hover:bg-[#1e1e1e] transition-all duration-300 px-6 py-2.5 rounded-full text-[0.8125rem] md:text-[0.9375rem] self-start shadow-lg hover:shadow-2xl"
               style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
             >
-              서비스 자세히보기
+              자세히보기
             </motion.button>
           </motion.div>
 
