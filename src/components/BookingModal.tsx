@@ -369,6 +369,13 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       handleClose();
     } catch (error: any) {
       console.error('예약 생성 실패:', error);
+      console.error('에러 상세 정보:', {
+        message: error?.message,
+        details: error?.details,
+        statusCode: error?.statusCode,
+        code: error?.code,
+        fullError: error
+      });
       
       // 에러 메시지 추출
       let errorMessage = '알 수 없는 오류가 발생했습니다.';
@@ -380,8 +387,10 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       }
       
       // Zod 에러 상세 정보가 있으면 추가 표시
+      // ApiError 인스턴스의 details 필드 확인
       const errorDetails = error?.details || error?.response?.data?.details;
-      if (errorDetails && Array.isArray(errorDetails)) {
+      
+      if (errorDetails && Array.isArray(errorDetails) && errorDetails.length > 0) {
         const details = errorDetails
           .map((detail: any) => {
             const field = detail.path?.join('.') || '알 수 없는 필드';
