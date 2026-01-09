@@ -21,7 +21,7 @@ export default function SettlementContent() {
   // ✅ Hooks 추가
   // 완료된 예약 목록 조회 (정산되지 않은 것만)
   const { data: unsettledData, isLoading: isLoadingUnsettled } = useUnsettledReservationsQuery();
-  const completedReservations = unsettledData || [];
+  const completedReservations = unsettledData?.reservations || [];
 
   // 정산 목록 조회
   const { data: settlementsData, isLoading: isLoadingSettlements } = useSettlementsQuery({
