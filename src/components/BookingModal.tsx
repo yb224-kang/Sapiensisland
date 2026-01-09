@@ -5,25 +5,8 @@ import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight,
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
 import { useState, useEffect, useRef, useMemo } from "react";
-// TODO: Cursor로 hooks 재생성 후 주석 해제
-// import { useCreateReservation } from '../hooks/useReservationQueries';
-
-// 임시 mock hook (Cursor로 hooks 재생성 후 삭제)
-const useCreateReservation = () => {
-  return {
-    mutateAsync: async (data: any) => {
-      console.log('예약 데이터 (Mock):', data);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ success: true, data: { id: Date.now() } });
-        }, 1000);
-      });
-    },
-    isLoading: false,
-    isError: false,
-    error: null,
-  };
-};
+// 독립 폴더의 hooks 사용 (re-export를 통해)
+import { useCreateReservation } from '../hooks/useReservationQueries';
 
 // Daum Postcode types
 declare global {
