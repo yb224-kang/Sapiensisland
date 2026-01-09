@@ -294,24 +294,32 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     // 주소가 있으면 우편번호로 지역 판단, 없으면 기본값
     const region = addressPostcode ? '서울' : '서울'; // 임시로 기본값, 필요시 주소 파싱 로직 추가
 
+    // professors 데이터에서 expert 정보 가져오기
+    const selectedExpertData = professors.find(p => p.id === selectedExpert);
+
+    // locationType 변환: 'confirmed' -> 'online', 'undecided' -> 'offline'
+    const apiLocationType = locationType === 'confirmed' ? 'online' : 'offline';
+
     // 예약 데이터 구성
     const reservationData = {
-      reservationDate, // "2026-01-15"
-      reservationTime: selectedTime, // "14:00"
-      expertId: selectedExpert, // number
-      locationType, // 'online' | 'offline'
-      location: locationType === 'online' 
+      reservationDate,
+      reservationTime: selectedTime,
+      expert: selectedExpertData?.name || '', // expertId 대신 expert (string)
+      expertField: selectedExpertData?.field || '', // expertField 추가
+      locationType: apiLocationType, // 'online' | 'offline'로 변환
+      location: locationType === 'confirmed' 
         ? location 
-        : `${addressPostcode} ${addressDetail}`.trim(), // 오프라인일 경우 주소 조합
-      region, // string (필수)
-      agency: formData.agency, // 필수 (요청사 & 주최사 통합)
-      topic: formData.topic, // 필수
-      audience: formData.audience || undefined, // optional
-      contactName: formData.contactName, // 필수
-      contactPhone: formData.contactPhone, // 필수
-      contactEmail: formData.contactEmail, // 필수
-      fee: parseInt(formData.fee) || 0, // string을 number로 변환
-      message: formData.message || undefined, // optional
+        : `${addressPostcode} ${addressDetail}`.trim(),
+      region,
+      agency: formData.agency,
+      client: formData.agency, // client 필드 추가 (또는 별도 필드로)
+      topic: formData.topic,
+      audience: formData.audience || undefined,
+      contactName: formData.contactName,
+      contactPhone: formData.contactPhone,
+      contactEmail: formData.contactEmail,
+      fee: parseInt(formData.fee) || 0,
+      message: formData.message || undefined,
     };
 
     try {
