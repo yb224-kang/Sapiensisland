@@ -4,7 +4,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 // TODO: Cursor로 hooks 재생성 후 주석 해제
 // import { useCreateReservation } from '../hooks/useReservationQueries';
 
@@ -36,8 +36,8 @@ declare global {
 type BookingStep = 'expert' | 'datetime' | 'location' | 'details' | 'confirm';
 
 // Generate time slots (30-minute intervals)
-const generateTimeSlots = () => {
-  const slots = [];
+const generateTimeSlots = (): string[] => {
+  const slots: string[] = [];
   for (let hour = 9; hour <= 18; hour++) {
     slots.push(`${hour.toString().padStart(2, '0')}:00`);
     if (hour < 18) {
@@ -198,7 +198,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     const month = today.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const days = [];
+    const days: (Date | null)[] = [];
 
     // Add empty slots for days before first day of month
     for (let i = 0; i < firstDay.getDay(); i++) {
@@ -283,7 +283,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
           }
           break;
         case 'details':
-          const missing = [];
+          const missing: string[] = [];
           if (!formData.agency?.trim()) missing.push('기관명');
           if (!formData.topic?.trim()) missing.push('강연 주제');
           if (!formData.contactName?.trim()) missing.push('담당자명');
@@ -326,7 +326,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     const selectedExpertData = professors.find(p => p.id === selectedExpert);
 
     // locationType 변환: 'confirmed' -> 'online', 'undecided' -> 'offline'
-    const apiLocationType = locationType === 'confirmed' ? 'online' : 'offline';
+    const apiLocationType: 'online' | 'offline' = locationType === 'confirmed' ? 'online' : 'offline';
 
     // 예약 데이터 구성
     const reservationData = {
@@ -334,7 +334,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       reservationTime: selectedTime,
       expert: selectedExpertData?.name || '', // expertId 대신 expert (string)
       expertField: selectedExpertData?.field || '', // expertField 추가
-      locationType: apiLocationType, // 'online' | 'offline'로 변환
+      locationType: apiLocationType as 'online' | 'offline', // 타입 단언
       location: locationType === 'confirmed' 
         ? location 
         : `${addressPostcode} ${addressDetail}`.trim(),
