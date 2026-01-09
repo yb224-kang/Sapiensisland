@@ -4,7 +4,8 @@ import { MapPin, TrendingUp, Calendar } from 'lucide-react';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import koreaMapImage from 'figma:asset/895ce7efbabc55f41f2769cea57b34c139574740.png';
 import KoreaMapInteractive from './KoreaMapInteractive';
-import { reservations, getRegionalDistribution } from '../data/mockData';
+import { useReservationsQuery } from '../hooks/useReservationQueries';
+import type { Reservation } from '../data/mockData';
 
 interface MapHeatmapContentProps {
   selectedExpert: string;
@@ -35,7 +36,7 @@ const REGION_FULL_NAMES: Record<string, string> = {
 // 지역명 단축 (역방향)
 const REGION_SHORT_NAMES: Record<string, string> = {
   '서울특별시': '서울',
-  '부산광역시': '부산',
+  '부산��역시': '부산',
   '대구광역시': '대구',
   '인천광역시': '인천',
   '광주광역시': '광주',
@@ -140,6 +141,10 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export default function MapHeatmapContent({ selectedExpert, dateRange }: MapHeatmapContentProps) {
+  // ✅ Hooks 추가
+  const { data: reservationsData } = useReservationsQuery();
+  const reservations = reservationsData?.reservations || [];
+  
   // 상위 필터 값을 그대로 사용
   // 지역별 예약 건수 집계
   const regionStats = Object.entries(
