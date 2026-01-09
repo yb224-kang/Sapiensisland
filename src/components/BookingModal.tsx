@@ -4,9 +4,26 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
-import { useState, useEffect, useRef, useMemo } from "react";
-// 독립 폴더의 hooks 사용 (re-export를 통해)
-import { useCreateReservation } from '../hooks/useReservationQueries';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+// TODO: Cursor로 hooks 재생성 후 주석 해제
+// import { useCreateReservation } from '../hooks/useReservationQueries';
+
+// 임시 mock hook (Cursor로 hooks 재생성 후 삭제)
+const useCreateReservation = () => {
+  return {
+    mutateAsync: async (data: any) => {
+      console.log('예약 데이터 (Mock):', data);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ success: true, data: { id: Date.now() } });
+        }, 1000);
+      });
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+  };
+};
 
 // Daum Postcode types
 declare global {
@@ -19,8 +36,8 @@ declare global {
 type BookingStep = 'expert' | 'datetime' | 'location' | 'details' | 'confirm';
 
 // Generate time slots (30-minute intervals)
-const generateTimeSlots = () => {
-  const slots = [];
+const generateTimeSlots = (): string[] => {
+  const slots: string[] = [];
   for (let hour = 9; hour <= 18; hour++) {
     slots.push(`${hour.toString().padStart(2, '0')}:00`);
     if (hour < 18) {
@@ -181,7 +198,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     const month = today.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const days = [];
+    const days: (Date | null)[] = [];
 
     // Add empty slots for days before first day of month
     for (let i = 0; i < firstDay.getDay(); i++) {
@@ -231,9 +248,9 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       case 'datetime': return selectedDate !== null && selectedTime !== null;
       case 'location': 
         if (locationType === 'confirmed') {
-          return location.trim() !== '';
-        } else if (locationType === 'undecided') {
           return addressPostcode.trim() !== '' && addressDetail.trim() !== '';
+        } else if (locationType === 'undecided') {
+          return selectedCity.trim() !== '' && selectedDistrict.trim() !== '';
         }
         return false;
       case 'details': 
@@ -259,14 +276,15 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
           break;
         case 'location':
           if (locationType === 'confirmed') {
-            alert('온라인 장소(링크)를 입력해주세요.');
-          } else {
-            if (!addressPostcode) alert('우편번호를 입력해주세요.');
+            if (!addressPostcode) alert('우편번호를 입력해주세요.')
             else if (!addressDetail?.trim()) alert('상세주소를 입력해주세요.');
+          } else {
+            if (!selectedCity) alert('시/도를 선택해주세요.');
+            else if (!selectedDistrict) alert('시/군/구를 선택해주세요.');
           }
           break;
         case 'details':
-          const missing = [];
+          const missing: string[] = [];
           if (!formData.agency?.trim()) missing.push('기관명');
           if (!formData.topic?.trim()) missing.push('강연 주제');
           if (!formData.contactName?.trim()) missing.push('담당자명');
@@ -301,15 +319,21 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     // 날짜 형식 변환 (YYYY-MM-DD)
     const reservationDate = selectedDate.toISOString().split('T')[0];
     
-    // 지역 추출 (주소에서 또는 기본값)
-    // 주소가 있으면 우편번호로 지역 판단, 없으면 기본값
-    const region = addressPostcode ? '서울' : '서울'; // 임시로 기본값, 필요시 주소 파싱 로직 추가
+    // 지역 추출
+    const region = locationType === 'confirmed' 
+      ? (addressPostcode ? location.split(' ')[0] : '서울')  // 장소확정: 기본주소에서 첫 단어 추출
+      : selectedCity; // 장소미정: 선택한 시/도
+    
+    // location 데이터 구성
+    const locationData = locationType === 'confirmed'
+      ? `${addressPostcode} ${location} ${addressDetail}`.trim()
+      : `${selectedCity} ${selectedDistrict} ${selectedRegion}`.trim();
 
     // professors 데이터에서 expert 정보 가져오기
     const selectedExpertData = professors.find(p => p.id === selectedExpert);
 
     // locationType 변환: 'confirmed' -> 'online', 'undecided' -> 'offline'
-    const apiLocationType = locationType === 'confirmed' ? 'online' : 'offline';
+    const apiLocationType: 'online' | 'offline' = locationType === 'confirmed' ? 'online' : 'offline';
 
     // 예약 데이터 구성
     const reservationData = {
@@ -317,10 +341,8 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       reservationTime: selectedTime,
       expert: selectedExpertData?.name || '', // expertId 대신 expert (string)
       expertField: selectedExpertData?.field || '', // expertField 추가
-      locationType: apiLocationType, // 'online' | 'offline'로 변환
-      location: locationType === 'confirmed' 
-        ? location 
-        : `${addressPostcode} ${addressDetail}`.trim(),
+      locationType: apiLocationType as 'online' | 'offline', // 타입 단언
+      location: locationData,
       region,
       agency: formData.agency,
       client: formData.agency, // client 필드 추가 (또는 별도 필드로)
@@ -356,10 +378,13 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     setSelectedEndTime(null);
     setIsDragging(false);
     setDragStartTime(null);
-    setLocationType('online');
+    setLocationType('confirmed');
     setLocation('');
     setAddressPostcode('');
     setAddressDetail('');
+    setSelectedCity('');
+    setSelectedDistrict('');
+    setSelectedRegion('');
     setFormData({
       agency: '',
       client: '',
@@ -690,7 +715,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                         className="text-[var(--section-text-primary)] m-0"
                         style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}
                       >
-                        📅 날짜 선택
+                        📅 날짜 선택 <span className="text-red-500">*</span>
                       </h4>
                       <div className="flex gap-2">
                         <button 
@@ -767,7 +792,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                       className="text-[var(--section-text-primary)] mb-6 m-0"
                       style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}
                     >
-                      🕐 시간 선택
+                      🕐 시간 선택 <span className="text-red-500">*</span>
                     </h4>
                     
                     {!selectedDate ? (
@@ -977,7 +1002,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="block text-[var(--section-text-primary)] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
                         >
-                          우편번호
+                          우편번호 <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-2">
                           <input
@@ -1006,7 +1031,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="block text-[var(--section-text-primary)] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
                         >
-                          기본주소
+                          기본주소 <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -1024,7 +1049,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="block text-[var(--section-text-primary)] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
                         >
-                          상세주소
+                          상세주소 <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -1156,7 +1181,7 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
                           className="block text-[var(--section-text-primary)] mb-2"
                           style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600, fontSize: '0.875rem' }}
                         >
-                          강연 주제
+                          강연 주제 <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
