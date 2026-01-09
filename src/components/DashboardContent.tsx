@@ -33,44 +33,16 @@ import {
   ComposedChart
 } from 'recharts';
 import MapHeatmapContent from './MapHeatmapContent';
+import { useDashboardStatsQuery, useMonthlyStatsQuery } from '../hooks/useDashboardQueries';
+import { useReservationsQuery } from '../hooks/useReservationQueries';
 import { 
-  getTotalBookings,
-  getBookingsByStatus,
   getBookingStatusData,
   getExpertPerformance,
-  getMonthlyStatsFromReservations,
-  getRecentBookings,
   getTopExperts,
   getRegionalDistribution,
-  getTotalRevenue,
-  getAverageBookingAmount,
   getBookingTypeData,
   getMonthlyApplicationStats,
-  settlements
 } from '../data/mockData';
-
-// 계산된 데이터 사용
-const allMonthlyBookingsData = getMonthlyStatsFromReservations();
-const expertPerformanceData = getExpertPerformance();
-const bookingStatusData = getBookingStatusData();
-const bookingTypeData = getBookingTypeData();
-const allRecentBookings = getRecentBookings();
-const topExperts = getTopExperts();
-const regionalData = getRegionalDistribution();
-// 정산 데이터 계산
-const totalSettlements = settlements.length;
-const completedSettlements = settlements.filter(s => s.settlementStatus === 'completed').length;
-const pendingSettlements = settlements.filter(s => s.settlementStatus === 'pending').length;
-
-// Treemap 데이터 생성 - 지역별 고유 색상
-const treemapData = regionalData.map(item => {
-  return {
-    name: item.region,
-    value: item.value,
-    percentage: item.percentage,
-    fill: item.color // mockData에서 정의한 지역별 고유 색상 사용
-  };
-});
 
 // Custom Treemap Content - 지역별 고유 색상
 const CustomTreemapContent = (props: any) => {
@@ -475,21 +447,74 @@ export default function DashboardContent() {
   const [customDateMode, setCustomDateMode] = useState(false);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  
+  // ✅ Hooks 추가
+  // 대시보드 통계 조회
+  const { data: statsData, isLoading: isLoadingStats } = useDashboardStatsQuery();
+  
+  // 월별 통계 조회
+  const { data: monthlyStatsData, isLoading: isLoadingMonthly } = useMonthlyStatsQuery();
+  
+  // 최근 예약 조회 (최근 5개)
+  const { data: recentReservationsData } = useReservationsQuery({
+    page: 1,
+    limit: 5,
+  });
+
+  // 데이터 추출
+  const stats = statsData || {
+    totalReservations: 0,
+    reservationsByStatus: {
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+    },
+    totalRevenue: 0,
+    totalSettlements: 0,
+    pendingInquiries: 0,
+  };
+  const monthlyStats = monthlyStatsData || [];
+  const recentReservations = recentReservationsData?.reservations || [];
+
+  // 계산된 통계 (API 데이터 사용)
+  const totalBookings = stats.totalReservations;
+  const bookingStats = stats.reservationsByStatus;
+  const totalRevenue = stats.totalRevenue / 1000000; // 백만원 단위
+  const avgAmount = totalBookings > 0 ? (stats.totalRevenue / totalBookings) / 1000000 : 0; // 백만원 단위
+  
+  // 이번 달 데이터 (월별 통계에서 마지막 데이터)
+  const currentMonthData = monthlyStats[monthlyStats.length - 1] || {
+    month: new Date().toISOString().substring(0, 7),
+    bookings: 0,
+    revenue: 0,
+  };
+
+  // Mock 데이터 (아직 API가 없는 부분들)
+  const allMonthlyBookingsData = monthlyStats;
+  const expertPerformanceData = getExpertPerformance();
+  const bookingStatusData = getBookingStatusData();
+  const bookingTypeData = getBookingTypeData();
+  const allRecentBookings = recentReservations;
+  const topExperts = getTopExperts();
+  const regionalData = getRegionalDistribution();
+  
+  // Treemap 데이터 생성 - 지역별 고유 색상
+  const treemapData = regionalData.map(item => {
+    return {
+      name: item.region,
+      value: item.value,
+      percentage: item.percentage,
+      fill: item.color // mockData에서 정의한 지역별 고유 색상 사용
+    };
+  });
+
   const [detailModal, setDetailModal] = useState<{isOpen: boolean; title: string; data: any; type: 'month' | 'expert' | 'status'}>({
     isOpen: false,
     title: '',
     data: null,
     type: 'month'
   });
-
-  // 계산된 통계
-  const totalBookings = getTotalBookings();
-  const bookingStats = getBookingsByStatus();
-  const totalRevenue = getTotalRevenue() / 1000000; // 백만원 단위
-  const avgAmount = getAverageBookingAmount() / 1000000; // 백만원 단위
-  
-  // 이번 달 데이터 (12월)
-  const currentMonthData = allMonthlyBookingsData[11]; // 12월 데이터
 
   const experts = ['all', '김경일', '유영만', '정재한', '김태훈', '김미경', '최재붕'];
   const dateRanges = [
@@ -565,6 +590,17 @@ export default function DashboardContent() {
       type
     });
   };
+
+  // 로딩 상태
+  if (isLoadingStats || isLoadingMonthly) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500">대시보드 데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

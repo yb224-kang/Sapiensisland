@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { X, TrendingUp, AlertCircle, Calendar, DollarSign, Percent, Calculator } from 'lucide-react';
-import { 
-  reservations as mockReservations, 
-  settlements as mockSettlements,
-  getCompletedReservations,
-  getSettlementByReservationId,
-  type Reservation,
-  type Settlement
-} from '../data/mockData';
+import { useSettlementsQuery, useUnsettledReservationsQuery, useCreateSettlement, useUpdateSettlementStatus } from '../hooks/useSettlementQueries';
+import { useReservationsQuery } from '../hooks/useReservationQueries';
+import type { Reservation, Settlement } from '../data/mockData'; // 타입만 사용
 
 export default function SettlementContent() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'unsettled' | 'completed'>('all');
@@ -23,13 +18,24 @@ export default function SettlementContent() {
     memo: ''
   });
 
-  // 중앙 Mock 데이터 사용
-  const completedReservations = getCompletedReservations();
-  const settlements = mockSettlements;
+  // ✅ Hooks 추가
+  // 완료된 예약 목록 조회 (정산되지 않은 것만)
+  const { data: unsettledData, isLoading: isLoadingUnsettled } = useUnsettledReservationsQuery();
+  const completedReservations = unsettledData || [];
 
-  // 정산 정보 가져오기
+  // 정산 목록 조회
+  const { data: settlementsData, isLoading: isLoadingSettlements } = useSettlementsQuery({
+    status: filterStatus === 'all' ? 'all' : filterStatus === 'completed' ? 'completed' : 'pending',
+  });
+  const settlements = settlementsData?.settlements || [];
+
+  // 정산 생성/수정 mutation
+  const createSettlementMutation = useCreateSettlement();
+  const updateSettlementStatusMutation = useUpdateSettlementStatus();
+
+  // 정산 정보 가져오기 함수 수정
   const getSettlement = (reservationId: number) => {
-    return getSettlementByReservationId(reservationId);
+    return settlements.find(s => s.reservationId === reservationId);
   };
 
   // 필터링된 예약 목록
@@ -128,21 +134,49 @@ export default function SettlementContent() {
 
   const calculated = calculateSettlement();
 
-  // 정산 저장 (실제로는 API 호출)
-  const handleSaveSettlement = () => {
+  // 정산 저장 (API 호출)
+  const handleSaveSettlement = async () => {
     if (!selectedReservation || !calculated) return;
     
-    console.log('정산 저장:', {
-      reservationId: selectedReservation.id,
-      ...calculated,
-      paymentScheduledDate: formData.paymentScheduledDate,
-      memo: formData.memo,
-      settlementStatus: 'pending'
-    });
-    
-    alert('정산 정보가 저장되었습니다!');
-    closeSettlementModal();
+    try {
+      const settlementData = {
+        reservationId: selectedReservation.id,
+        cost: calculated.cost,
+        profitRate: calculated.profitRate,
+        settlementAmount: calculated.settlementAmount,
+        paymentScheduledDate: formData.paymentScheduledDate || undefined,
+        memo: formData.memo || undefined,
+      };
+
+      if (editingSettlement) {
+        // 수정 모드: 상태 변경만 (비용/비율 변경은 새로 생성)
+        await updateSettlementStatusMutation.mutateAsync({
+          id: editingSettlement.id,
+          status: 'pending',
+        });
+      } else {
+        // 신규 등록
+        await createSettlementMutation.mutateAsync(settlementData);
+      }
+      
+      alert('정산 정보가 저장되었습니다!');
+      closeSettlementModal();
+    } catch (error) {
+      console.error('정산 저장 실패:', error);
+      alert('정산 저장에 실패했습니다. 다시 시도해주세요.');
+    }
   };
+
+  // 로딩 상태
+  if (isLoadingUnsettled || isLoadingSettlements) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -601,11 +635,13 @@ export default function SettlementContent() {
                 </button>
                 <button
                   onClick={handleSaveSettlement}
-                  disabled={!formData.cost || !calculated}
+                  disabled={!formData.cost || !calculated || createSettlementMutation.isPending || updateSettlementStatusMutation.isPending}
                   className="flex-1 h-12 px-6 text-sm text-white bg-[#000050] rounded-xl hover:bg-[#000070] active:scale-98 transition-all duration-200 shadow-lg shadow-[#000050]/20 hover:shadow-xl hover:shadow-[#000050]/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                   style={{ fontWeight: 600 }}
                 >
-                  {editingSettlement ? '정산 수정하기' : '정산 등록하기'}
+                  {createSettlementMutation.isPending || updateSettlementStatusMutation.isPending 
+                    ? '저장 중...' 
+                    : editingSettlement ? '정산 수정하기' : '정산 등록하기'}
                 </button>
               </div>
             </div>

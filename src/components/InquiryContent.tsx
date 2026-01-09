@@ -14,7 +14,8 @@ import {
   User,
   Calendar
 } from 'lucide-react';
-import { inquiries as mockInquiries, Inquiry } from '../data/mockData';
+import { useInquiriesQuery, useReplyInquiry, useUpdateInquiryStatus } from '../hooks/useInquiryQueries';
+import type { Inquiry } from '../data/mockData'; // 타입만 사용
 
 export default function InquiryContent() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,22 +24,31 @@ export default function InquiryContent() {
   const [replyText, setReplyText] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter inquiries based on search and status
-  const filteredInquiries = mockInquiries.filter(inquiry => {
+  // ✅ Hooks 추가
+  // 문의 목록 조회
+  const { data: inquiriesData, isLoading, error } = useInquiriesQuery({
+    status: statusFilter === 'all' ? 'all' : statusFilter,
+  });
+  const inquiries = inquiriesData?.inquiries || [];
+
+  // 답변 mutation
+  const replyInquiryMutation = useReplyInquiry();
+  const updateInquiryStatusMutation = useUpdateInquiryStatus();
+
+  // 클라이언트 사이드 필터링 (검색어)
+  const filteredInquiries = inquiries.filter(inquiry => {
     const matchesSearch = 
       inquiry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inquiry.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inquiry.contactEmail.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || inquiry.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   // Get counts by status
-  const pendingCount = mockInquiries.filter(i => i.status === 'pending').length;
-  const repliedCount = mockInquiries.filter(i => i.status === 'replied').length;
-  const resolvedCount = mockInquiries.filter(i => i.status === 'resolved').length;
+  const pendingCount = inquiries.filter(i => i.status === 'pending').length;
+  const repliedCount = inquiries.filter(i => i.status === 'replied').length;
+  const resolvedCount = inquiries.filter(i => i.status === 'resolved').length;
 
   // Status badge
   const getStatusBadge = (status: Inquiry['status']) => {
@@ -59,19 +69,50 @@ export default function InquiryContent() {
     );
   };
 
-  const handleReply = () => {
+  const handleReply = async () => {
     if (!selectedInquiry || !replyText.trim()) return;
     
-    // TODO: API 연동
-    console.log('답변 전송:', {
-      inquiryId: selectedInquiry.id,
-      reply: replyText
-    });
-    
-    alert('답변이 전송되었습니다.');
-    setReplyText('');
-    setSelectedInquiry(null);
+    try {
+      await replyInquiryMutation.mutateAsync({
+        id: selectedInquiry.id,
+        reply: replyText,
+        repliedBy: '관리자', // 실제로는 로그인한 사용자 정보 사용
+      });
+      
+      alert('답변이 전송되었습니다.');
+      setReplyText('');
+      setSelectedInquiry(null);
+    } catch (error) {
+      console.error('답변 전송 실패:', error);
+      alert('답변 전송에 실패했습니다. 다시 시도해주세요.');
+    }
   };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500">문의 내역을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <div className="text-center py-8">
+            <p className="text-sm text-red-500">문의 내역을 불러오는 중 오류가 발생했습니다.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -434,11 +475,11 @@ export default function InquiryContent() {
                   {selectedInquiry.status !== 'resolved' && (
                     <button
                       onClick={handleReply}
-                      disabled={!replyText.trim()}
+                      disabled={!replyText.trim() || replyInquiryMutation.isPending}
                       className="flex-1 h-12 px-6 text-sm text-white bg-[#000050] rounded-xl hover:bg-[#000070] active:scale-98 transition-all duration-200 shadow-lg shadow-[#000050]/20 hover:shadow-xl hover:shadow-[#000050]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ fontFamily: 'Pretendard Variable, sans-serif', fontWeight: 600 }}
                     >
-                      답변 전송
+                      {replyInquiryMutation.isPending ? '전송 중...' : '답변 전송'}
                     </button>
                   )}
                 </div>
