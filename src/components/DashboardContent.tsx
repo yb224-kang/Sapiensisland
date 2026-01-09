@@ -42,6 +42,7 @@ import {
   getRegionalDistribution,
   getBookingTypeData,
   getMonthlyApplicationStats,
+  settlements,
 } from '../data/mockData';
 
 // Custom Treemap Content - 지역별 고유 색상
@@ -482,6 +483,11 @@ export default function DashboardContent() {
   const bookingStats = stats.reservationsByStatus;
   const totalRevenue = stats.totalRevenue / 1000000; // 백만원 단위
   const avgAmount = totalBookings > 0 ? (stats.totalRevenue / totalBookings) / 1000000 : 0; // 백만원 단위
+  
+  // 정산 데이터 계산
+  const totalSettlements = stats.totalSettlements;
+  const completedSettlements = settlements.filter(s => s.settlementStatus === 'completed').length;
+  const pendingSettlements = settlements.filter(s => s.settlementStatus === 'pending').length;
   
   // 이번 달 데이터 (월별 통계에서 마지막 데이터)
   const currentMonthData = monthlyStats[monthlyStats.length - 1] || {
