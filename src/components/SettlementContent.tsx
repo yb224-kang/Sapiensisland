@@ -161,9 +161,26 @@ export default function SettlementContent() {
       
       alert('정산 정보가 저장되었습니다!');
       closeSettlementModal();
-    } catch (error) {
+    } catch (error: any) {
       console.error('정산 저장 실패:', error);
-      alert('정산 저장에 실패했습니다. 다시 시도해주세요.');
+      
+      let errorMessage = '정산 저장에 실패했습니다.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Zod 에러 상세 정보가 있으면 추가 표시
+        if ((error as any).details && Array.isArray((error as any).details)) {
+          const details = (error as any).details
+            .map((detail: any) => {
+              const field = detail.path?.join('.') || '알 수 없는 필드';
+              return `${field}: ${detail.message}`;
+            })
+            .join('\n');
+          errorMessage += `\n\n상세 오류:\n${details}`;
+        }
+      }
+      
+      alert(errorMessage);
     }
   };
 

@@ -7,8 +7,18 @@ import DashboardContent from '../components/DashboardContent';
 import InquiryContent from '../components/InquiryContent';
 import PartnersContent from '../components/PartnersContentAdmin';
 import { historyData, categoryEmojiMap } from '../data/historyData';
-// 독립 폴더의 hooks 사용 (re-export를 통해)
-import { useReservationsQuery } from '../hooks/useReservationQueries';
+// TODO: Cursor로 hooks 재생성 후 주석 해제
+// import { useReservationsQuery } from '../hooks/useReservationQueries';
+
+// 임시 mock hook (Cursor로 hooks 재생성 후 삭제)
+const useReservationsQuery = () => {
+  return {
+    data: [],
+    isLoading: false,
+    isError: false,
+    error: null,
+  };
+};
 
 type MenuItem = {
   id: string;
@@ -169,7 +179,7 @@ function ReservationsContent() {
   const { data: reservationsData, isLoading, error } = useReservationsQuery({
     status: filterStatus === 'all' ? undefined : filterStatus,
   });
-  const reservations = reservationsData?.reservations || [];
+  const reservations = reservationsData?.data || [];
 
   const statuses = [
     { value: 'all', label: '전체' },

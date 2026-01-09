@@ -5,8 +5,25 @@ import { Calendar, Clock, MapPin, User, CheckCircle2, ChevronLeft, ChevronRight,
 import { motion, AnimatePresence } from "motion/react";
 import { professors } from "../data/professors";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-// 독립 폴더의 hooks 사용 (re-export를 통해)
-import { useCreateReservation } from '../hooks/useReservationQueries';
+// TODO: Cursor로 hooks 재생성 후 주석 해제
+// import { useCreateReservation } from '../hooks/useReservationQueries';
+
+// 임시 mock hook (Cursor로 hooks 재생성 후 삭제)
+const useCreateReservation = () => {
+  return {
+    mutateAsync: async (data: any) => {
+      console.log('예약 데이터 (Mock):', data);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ success: true, data: { id: Date.now() } });
+        }, 1000);
+      });
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+  };
+};
 
 // Daum Postcode types
 declare global {
@@ -315,6 +332,12 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     // professors 데이터에서 expert 정보 가져오기
     const selectedExpertData = professors.find(p => p.id === selectedExpert);
 
+    // expert와 expertField 검증
+    if (!selectedExpertData || !selectedExpertData.name || !selectedExpertData.field) {
+      alert('전문가를 선택해주세요.');
+      return;
+    }
+
     // locationType 변환: 'confirmed' -> 'online', 'undecided' -> 'offline'
     const apiLocationType: 'online' | 'offline' = locationType === 'confirmed' ? 'online' : 'offline';
 
@@ -322,22 +345,22 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
     const reservationData = {
       reservationDate,
       reservationTime: selectedTime,
-      expert: selectedExpertData?.name || '', // expertId 대신 expert (string)
-      expertField: selectedExpertData?.field || '', // expertField 추가
-      locationType: apiLocationType as 'online' | 'offline', // 타입 단언
-      location: locationData,
-      region,
+      expert: selectedExpertData.name, // 검증 완료되어 빈 문자열 없음
+      expertField: selectedExpertData.field, // 검증 완료되어 빈 문자열 없음
+      locationType: apiLocationType as 'online' | 'offline',
+      location: locationData || undefined, // 빈 문자열이면 undefined
+      region: region || undefined, // 빈 문자열이면 undefined
       agency: formData.agency,
-      client: formData.agency, // client 필드 추가 (또는 별도 필드로)
+      client: formData.agency,
       topic: formData.topic,
-      audience: formData.audience || undefined,
+      audience: formData.audience?.trim() || undefined, // trim 후 빈 문자열이면 undefined
       contactName: formData.contactName,
       contactPhone: formData.contactPhone,
       contactEmail: formData.contactEmail,
       fee: formData.fee && formData.fee.trim() !== '' 
         ? (parseInt(formData.fee) || 0) 
         : 0,
-      message: formData.message || undefined,
+      message: formData.message?.trim() || undefined, // trim 후 빈 문자열이면 undefined
     };
 
     try {
@@ -346,10 +369,29 @@ export default function BookingModal({ isOpen, onClose, preSelectedExpertId }: B
       handleClose();
     } catch (error: any) {
       console.error('예약 생성 실패:', error);
-      const errorMessage = error?.response?.data?.message 
-        || error?.message 
-        || '알 수 없는 오류가 발생했습니다.';
-      alert(`예약 생성에 실패했습니다: ${errorMessage}`);
+      
+      // 에러 메시지 추출
+      let errorMessage = '알 수 없는 오류가 발생했습니다.';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      // Zod 에러 상세 정보가 있으면 추가 표시
+      const errorDetails = error?.details || error?.response?.data?.details;
+      if (errorDetails && Array.isArray(errorDetails)) {
+        const details = errorDetails
+          .map((detail: any) => {
+            const field = detail.path?.join('.') || '알 수 없는 필드';
+            return `${field}: ${detail.message}`;
+          })
+          .join('\n');
+        errorMessage += `\n\n상세 오류:\n${details}`;
+      }
+      
+      alert(`예약 생성에 실패했습니다:\n${errorMessage}`);
     }
   };
 
